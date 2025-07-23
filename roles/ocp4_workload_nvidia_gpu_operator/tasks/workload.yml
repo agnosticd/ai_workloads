@@ -34,7 +34,7 @@
 - name: Setup NVIDIA GPU Cluster Policy
   kubernetes.core.k8s:
     state: present
-    file: nvidia_gpu_clusterpolicy.json
+    src: nvidia_gpu_clusterpolicy.json
 
 # Todo: proper check
 # - name: 60 second pause
