@@ -1,0 +1,3 @@
+= ocp4_workload_nvidia_gpu_setup - NFD and NVIDIA GPU Setup Role
+
+See defaults/main.yml for variables to set.

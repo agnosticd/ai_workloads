@@ -1,0 +1,4 @@
+---
+- name: Print unsupported message
+  ansible.builtin.debug:
+    msg: "Removing the NVIDIA GPU Operator is not implemented."

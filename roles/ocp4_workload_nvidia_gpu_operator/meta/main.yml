@@ -1,0 +1,14 @@
+---
+galaxy_info:
+  role_name: ocp4_workload_nvidia_gpu_setup
+  author: Red Hat, Ritesh Shah (rshah@redhat.com)
+  description: |
+    Set up NVIDIA GPU on an OpenShift Cluster
+  license: MIT
+  min_ansible_version: "2.9"
+  platforms:
+  - linux
+  galaxy_tags:
+  - ocp
+  - openshift
+dependencies: []

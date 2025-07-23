@@ -1,0 +1,18 @@
+---
+# ------------------------------------------------
+# NVIDIA GPU Operator
+# ------------------------------------------------
+ocp4_workload_nvidia_gpu_operator_namespace: 
+ocp4_workload_nvidia_gpu_operator_channel: v25.3
+ocp4_workload_nvidia_gpu_operator_automatic_install_plan_approval: true
+ocp4_workload_nvidia_gpu_operator_starting_csv: ""
+# ocp4_workload_nvidia_gpu_operator_starting_csv: gpu-operator-certified.v25.3.1
+ocp4_workload_nvidia_gpu_operator_wait_for_deploy: true
+ocp4_workload_nvidia_gpu_operator_use_catalog_snapshot: false
+ocp4_workload_nvidia_gpu_operator_catalogsource_name: ""
+ocp4_workload_nvidia_gpu_operator_catalog_snapshot_image: ""
+ocp4_workload_nvidia_gpu_operator_catalog_snapshot_image_tag: ""
+
+ocp4_workload_nvidia_gpu_operator_create_dashboard: false
+ocp4_workload_nvidia_gpu_operator_dcgm_exporter_dashboard_url: >
+  https://github.com/NVIDIA/dcgm-exporter/raw/main/grafana/dcgm-exporter-dashboard.json

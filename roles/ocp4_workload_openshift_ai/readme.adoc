@@ -1,0 +1,3 @@
+= ocp4_workload_openshift_ai - Install OpenShift AI on the cluster
+
+See defaults/main.yml for variables to set.
