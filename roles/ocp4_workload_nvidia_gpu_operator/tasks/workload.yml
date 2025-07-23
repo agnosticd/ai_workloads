@@ -49,7 +49,7 @@
     wait_timeout: 600
 
 - name: Setup NVIDIA DCGM Exporter Dashboard
-  when: ocp4_workload_nvidia_gpu_setup_create_dashboard | bool
+  when: ocp4_workload_nvidia_gpu_operator_create_dashboard | bool
   block:
   - name: Check if NVIDIA DCGM Exporter Dashboard ConfigMap exists
     kubernetes.core.k8s_info:
@@ -73,4 +73,4 @@
             console.openshift.io/dashboard: "true"
             console.openshift.io/odc-dashboard: "true"
         data:
-          dcgm-exporter-dashboard.json: "{{ lookup('url', ocp4_workload_nvidia_gpu_setup_dcgm_exporter_dashboard_url) }}"
+          dcgm-exporter-dashboard.json: "{{ lookup('url', ocp4_workload_nvidia_gpu_operator_dcgm_exporter_dashboard_url) }}"
