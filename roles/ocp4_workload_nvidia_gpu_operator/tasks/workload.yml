@@ -82,8 +82,8 @@
               console.openshift.io/dashboard: "true"
               console.openshift.io/odc-dashboard: "true"
           data:
-            dcgm-exporter-dashboard.json: |
-              {{ lookup('url', ocp4_workload_nvidia_gpu_operator_dcgm_exporter_dashboard_url) | from_json | to_nice_json(indent=2) }}
+            dcgm-exporter-dashboard.json: |-
+              {{ lookup('url', ocp4_workload_nvidia_gpu_operator_dcgm_exporter_dashboard_url) }}
 
     # - name: Clean up downloaded dashboard file
     #   ansible.builtin.file:
