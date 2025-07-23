@@ -59,16 +59,9 @@
       namespace: openshift-config-managed
     register: r_dcgm_dashboard_configmap
 
-  - name: Setup NVIDIA DCGM Exporter Dashboard
+  - name: Setup NVIDIA DCGM Exporter Dashboard if it doesn't exist
     when: r_dcgm_dashboard_configmap.resources | length == 0
     block:
-    # - name: Download NVIDIA DCGM Exporter Dashboard JSON
-    #   ansible.builtin.get_url:
-    #     url: "{{ ocp4_workload_nvidia_gpu_operator_dcgm_exporter_dashboard_url }}"
-    #     dest: /tmp/dcgm-exporter-dashboard.json
-    #     mode: ug=rw,o=r
-    #   register: r_dashboard_download
-
     - name: Fetch and format DCGM dashboard JSON
       ansible.builtin.uri:
         url: "{{ ocp4_workload_nvidia_gpu_operator_dcgm_exporter_dashboard_url }}"
@@ -91,8 +84,3 @@
           data:
             dcgm-exporter-dashboard.json: |
               {{ r_dcgm_dashboard_json.content | from_json | to_nice_json(indent=2) }}
-
-    # - name: Clean up downloaded dashboard file
-    #   ansible.builtin.file:
-    #     path: /tmp/dcgm-exporter-dashboard.json
-    #     state: absent
