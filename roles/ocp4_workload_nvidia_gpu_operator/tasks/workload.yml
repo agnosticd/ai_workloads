@@ -1,5 +1,17 @@
 ---
----
+# Check to make sure NFD Operator has been installed
+
+- name: Check for NodeFeatureDiscovery objects
+  kubernetes.core.k8s_info:
+    api_version: nfd.openshift.io/v1
+    kind: NodeFeatureDiscovery
+  register: r_nfd_objects
+
+- name: Fail if no NodeFeatureDiscovery objects found
+  ansible.builtin.fail:
+    msg: "No NodeFeatureDiscovery objects found. Please install and configure the Node Feature Discovery operator before installing the NVIDIA GPU operator."
+  when: r_nfd_objects.resources | length == 0
+
 - name: Install NVIDIA GPU operator
   ansible.builtin.include_role:
     name: install_operator
