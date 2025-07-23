@@ -83,7 +83,7 @@
               console.openshift.io/odc-dashboard: "true"
           data:
             dcgm-exporter-dashboard.json: |
-              {{ lookup('file', '/tmp/dcgm-exporter-dashboard.json') | indent(12) }}
+              {{ lookup('file', '/tmp/dcgm-exporter-dashboard.json') | indent(4) }}
 
     - name: Clean up downloaded dashboard file
       ansible.builtin.file:
