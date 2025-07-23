@@ -36,26 +36,41 @@
     state: present
     src: nvidia_gpu_clusterpolicy.json
 
-# Todo: proper check
-# - name: 60 second pause
-#   ansible.builtin.pause:
-#     seconds: 60
+- name: Wait for ClusterPolicy to be ready
+  kubernetes.core.k8s_info:
+    api_version: nvidia.com/v1
+    kind: ClusterPolicy
+    namespace: nvidia-gpu-operator
+    wait: true
+    wait_condition:
+      type: Ready
+      status: "True"
+      reason: Reconciled
+    wait_timeout: 600
 
-# - name: Install NVIDIA GPU Dashboard
-#   when: ocp4_workload_nvidia_gpu_setup_create_dashboard | bool
-#   ansible.builtin.shell: |
-#     if oc get configmap nvidia-dcgm-exporter-dashboard -n openshift-config-managed; then
-#       echo "ConfigMap nvidia-dcgm-exporter-dashboard already exists. Skipping creation."
-#     else
-#       # Get dashboard JSON
-#       curl -Lf {{ ocp4_workload_nvidia_gpu_setup_dcgm_exporter_dashboard_url }} -o dcgm-exporter-dashboard.json
+- name: Setup NVIDIA DCGM Exporter Dashboard
+  when: ocp4_workload_nvidia_gpu_setup_create_dashboard | bool
+  block:
+  - name: Check if NVIDIA DCGM Exporter Dashboard ConfigMap exists
+    kubernetes.core.k8s_info:
+      api_version: v1
+      kind: ConfigMap
+      name: nvidia-dcgm-exporter-dashboard
+      namespace: openshift-config-managed
+    register: r_dcgm_dashboard_configmap
 
-#       # Create ConfigMap
-#       oc create configmap nvidia-dcgm-exporter-dashboard -n openshift-config-managed --from-file=dcgm-exporter-dashboard.json
-
-#       # Label the ConfigMap
-#       oc label configmap nvidia-dcgm-exporter-dashboard -n openshift-config-managed "console.openshift.io/dashboard=true"
-#       oc label configmap nvidia-dcgm-exporter-dashboard -n openshift-config-managed "console.openshift.io/odc-dashboard=true"
-#       echo "ConfigMap nvidia-dcgm-exporter-dashboard created and labeled."
-#     fi
-#     oc -n openshift-config-managed get cm nvidia-dcgm-exporter-dashboard --show-labels
+  - name: Create NVIDIA DCGM Exporter Dashboard ConfigMap
+    when: r_dcgm_dashboard_configmap.resources | length == 0
+    kubernetes.core.k8s:
+      state: present
+      definition:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: nvidia-dcgm-exporter-dashboard
+          namespace: openshift-config-managed
+          labels:
+            console.openshift.io/dashboard: "true"
+            console.openshift.io/odc-dashboard: "true"
+        data:
+          dcgm-exporter-dashboard.json: "{{ lookup('url', ocp4_workload_nvidia_gpu_setup_dcgm_exporter_dashboard_url) }}"
