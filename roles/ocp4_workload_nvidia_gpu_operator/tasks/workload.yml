@@ -59,18 +59,33 @@
       namespace: openshift-config-managed
     register: r_dcgm_dashboard_configmap
 
-  - name: Create NVIDIA DCGM Exporter Dashboard ConfigMap
+  - name: Setup NVIDIA DCGM Exporter Dashboard
     when: r_dcgm_dashboard_configmap.resources | length == 0
-    kubernetes.core.k8s:
-      state: present
-      definition:
-        apiVersion: v1
-        kind: ConfigMap
-        metadata:
-          name: nvidia-dcgm-exporter-dashboard
-          namespace: openshift-config-managed
-          labels:
-            console.openshift.io/dashboard: "true"
-            console.openshift.io/odc-dashboard: "true"
-        data:
-          dcgm-exporter-dashboard.json: "{{ lookup('url', ocp4_workload_nvidia_gpu_operator_dcgm_exporter_dashboard_url) }}"
+    block:
+    - name: Download NVIDIA DCGM Exporter Dashboard JSON
+      ansible.builtin.get_url:
+        url: "{{ ocp4_workload_nvidia_gpu_operator_dcgm_exporter_dashboard_url }}"
+        dest: /tmp/dcgm-exporter-dashboard.json
+        mode: ug=rw,o=r
+      register: r_dashboard_download
+
+    - name: Create NVIDIA DCGM Exporter Dashboard ConfigMap
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: nvidia-dcgm-exporter-dashboard
+            namespace: openshift-config-managed
+            labels:
+              console.openshift.io/dashboard: "true"
+              console.openshift.io/odc-dashboard: "true"
+          data:
+            dcgm-exporter-dashboard.json: |
+              {{ lookup('file', '/tmp/dcgm-exporter-dashboard.json') | indent(12) }}
+
+    - name: Clean up downloaded dashboard file
+      ansible.builtin.file:
+        path: /tmp/dcgm-exporter-dashboard.json
+        state: absent
