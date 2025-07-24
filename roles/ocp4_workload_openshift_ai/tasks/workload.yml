@@ -47,7 +47,7 @@
   delay: 30
 
 - name: Report OpenShift AI Dashboard URL
-  agnosticd_user_info:
+  agnosticd.core.agnosticd_user_info:
     msg: "RedHat OpenShift AI Dashboard: https://{{ r_odh_dashboard_route.resources[0].spec.host }}"
     data:
       rhodh_dashboard: "https://{{ r_odh_dashboard_route.resources[0].spec.host }}"
