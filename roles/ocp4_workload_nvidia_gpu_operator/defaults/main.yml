@@ -2,7 +2,7 @@
 # ------------------------------------------------
 # NVIDIA GPU Operator
 # ------------------------------------------------
-ocp4_workload_nvidia_gpu_operator_namespace: nvidia-gpu-operator
+ocp4_workload_nvidia_gpu_operator_namespace: 
 ocp4_workload_nvidia_gpu_operator_channel: v25.3
 ocp4_workload_nvidia_gpu_operator_automatic_install_plan_approval: true
 ocp4_workload_nvidia_gpu_operator_starting_csv: ""
