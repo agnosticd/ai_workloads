@@ -1,6 +1,4 @@
 ---
-# Leave this as the last task in the playbook.
-- name: Remove_workload tasks complete
-  when: not silent | bool
+- name: Print unsupported message
   ansible.builtin.debug:
-    msg: "Remove Workload tasks completed successfully."
+    msg: "Removing models is not implemented."

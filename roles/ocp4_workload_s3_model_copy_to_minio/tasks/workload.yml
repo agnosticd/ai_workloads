@@ -1,29 +1,33 @@
 ---
-- name: Create Secrets
-  kubernetes.core.k8s:
-    state: present
-    definition: "{{ lookup('template', item) | from_yaml }}"
-  loop:
-  - ./templates/secret.yaml.j2
-  - ./templates/secret-aws-connection-aiworkshop.yaml.j2
-  - ./templates/service-account.yaml.j2
-  - ./templates/service-account-rolebinding.yaml.j2
-  - ./templates/image-puller.yaml.j2
+- name: Assert that root user and password are set
+  ansible.builtin.assert:
+    that:
+    - ocp4_workload_s3_model_copy_to_minio_root_user | default("") | length > 0
+    - ocp4_workload_s3_model_copy_to_minio_root_password | default("") | length > 0
+    fail_msg: "ocp4_workload_s3_model_copy_to_minio_root_user and ocp4_workload_s3_model_copy_to_minio_root_password must be set"
 
-- name: Copy data from S3 to Minio
+- name: Assert that AWS credentials have been provided
+  ansible.builtin.assert:
+    that:
+    - ocp4_workload_s3_model_copy_to_minio_s3_access_key | default("") | length > 0
+    - ocp4_workload_s3_model_copy_to_minio_s3_secret_key | default("") | length > 0
+    fail_msg: "ocp4_workload_s3_model_copy_to_minio_s3_access_key and ocp4_workload_s3_model_copy_to_minio_s3_secret_key must be set"
+
+- name: Create secrets and service accounts
   kubernetes.core.k8s:
     state: present
-    definition: "{{ lookup('template', 'add-models-job.yaml.j2') | from_yaml }}"
+    template: "{{ item }}"
+  loop:
+  - secret-minio.yaml.j2
+  - secret-aws-connection-aiworkshop.yaml.j2
+  - serviceaccount.yaml.j2
+  - serviceaccount-rolebinding.yaml.j2
+  - imagestream.yaml.j2
+
+- name: Create job to copy data from S3 to Minio
+  kubernetes.core.k8s:
+    state: present
+    template: "add-models-job.yaml.j2"
   register: r_data_copy
   retries: 60
   delay: 30
-#  until:
-#  - r_data_copy.resources[0].status.phase is defined
-#  - r_data_copy.resources[0].status.phase | length > 0
-#  - r_data_copy.resources[0].status.phase == "Succeeded"
-
-# Leave this as the last task in the playbook.
-- name: Workload tasks complete
-  when: not silent | bool
-  ansible.builtin.debug:
-    msg: "Workload Tasks completed successfully."
