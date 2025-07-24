@@ -1,7 +1,7 @@
 ---
 # Project where the MinIO service is deployed
 ocp4_workload_s3_model_copy_to_minio_project: ic-shared-minio
-ocp4_workload_s3_model_copy_to_minio_service_name: minio
+ocp4_workload_s3_model_copy_to_minio_name: minio
 
 # Port for the LoadBalancer Service
 ocp4_workload_s3_model_copy_to_minio_port: 9000
