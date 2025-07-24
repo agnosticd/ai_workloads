@@ -26,11 +26,3 @@
   - job-add-models.yaml.j2
   retries: 60
   delay: 5
-
-# - name: Create job to copy data from S3 to Minio
-#   kubernetes.core.k8s:
-#     state: present
-#     template: "add-models-job.yaml.j2"
-#   register: r_data_copy
-#   retries: 60
-#   delay: 30
