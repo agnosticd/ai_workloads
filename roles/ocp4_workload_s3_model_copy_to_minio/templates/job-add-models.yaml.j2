@@ -28,8 +28,8 @@ spec:
           # Set up AWS credentials
           export AWS_ACCESS_KEY_ID=$(oc -n {{ ocp4_workload_s3_model_copy_to_minio_project }} get secret aws-secret-for-s3-model -o jsonpath='{.data.AWS_ACCESS_KEY_ID}' | base64 --decode)
           export AWS_SECRET_ACCESS_KEY=$(oc -n {{ ocp4_workload_s3_model_copy_to_minio_project }} get secret aws-secret-for-s3-model -o jsonpath='{.data.AWS_SECRET_ACCESS_KEY}' | base64 --decode)
-          export MINIO_ACCESS_KEY_ID=$(oc -n {{ ocp4_workload_s3_model_copy_to_minio_project }} get secret {{ ocp4_workload_minio_name }}-root-credentials -o jsonpath='{.data.minio_root_user}' | base64 --decode)
-          export MINIO_SECRET_ACCESS_KEY=$(oc -n {{ ocp4_workload_s3_model_copy_to_minio_project }} get secret {{ ocp4_workload_minio_name }}-root-credentials -o jsonpath='{.data.minio_root_password}' | base64 --decode)
+          export MINIO_ACCESS_KEY_ID=$(oc -n {{ ocp4_workload_s3_model_copy_to_minio_project }} get secret {{ ocp4_workload_s3_model_copy_to_minio_name }}-root-credentials -o jsonpath='{.data.minio_root_user}' | base64 --decode)
+          export MINIO_SECRET_ACCESS_KEY=$(oc -n {{ ocp4_workload_s3_model_copy_to_minio_project }} get secret {{ ocp4_workload_s3_model_copy_to_minio_name }}-root-credentials -o jsonpath='{.data.minio_root_password}' | base64 --decode)
           export MINIO_ROUTE=$(oc -n {{ ocp4_workload_s3_model_copy_to_minio_project }} get route {{ ocp4_workload_s3_model_copy_to_minio_name }} -o jsonpath='{.status.ingress[0].host}')
 
           # Set MinIO alias with the new endpoint
