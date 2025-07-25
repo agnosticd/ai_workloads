@@ -20,7 +20,7 @@
   when: ocp4_workload_openshift_ai_deploy_dsc | bool
   kubernetes.core.k8s:
     state: present
-    definition: "{{ lookup('template', './templates/redhat-datasciencecluster.yaml.j2') | from_yaml }}"
+    template: redhat-datasciencecluster.yaml.j2
   register: r_ds_cluster
   until: not r_ds_cluster.failed
   retries: 10
