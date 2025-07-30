@@ -3,14 +3,11 @@
 # stable for stable, fast for latest available
 ocp4_workload_openshift_ai_channel: stable
 
-# Set automatic InstallPlan approval. If set to false it is also suggested
-# to set the starting_csv to pin a specific version
-# This variable has no effect when using a catalog snapshot (always true)
+# Set automatic InstallPlan approval. Must be set to false when specifying a starting_csv
 ocp4_workload_openshift_ai_automatic_install_plan_approval: true
 
 # Set a starting ClusterServiceVersion.
-# Recommended to leave empty to get latest in the channel when not using
-# a catalog snapshot.
+# Recommended to leave empty to get latest in the channel.
 # Highly recommended to be set when using a catalog snapshot but can be
 # empty to get the latest available in the channel at the time when
 # the catalog snapshot got created.
