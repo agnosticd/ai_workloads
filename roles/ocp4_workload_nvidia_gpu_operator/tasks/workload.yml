@@ -37,6 +37,7 @@
     src: nvidia_gpu_clusterpolicy.json
 
 - name: Wait for ClusterPolicy to be ready
+  when: ocp4_workload_nvidia_gpu_operator_wait_for_cluster_policy | bool
   kubernetes.core.k8s_info:
     api_version: nvidia.com/v1
     kind: ClusterPolicy
