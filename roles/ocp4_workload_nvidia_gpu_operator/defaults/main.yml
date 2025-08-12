@@ -7,6 +7,7 @@ ocp4_workload_nvidia_gpu_operator_channel: v25.3
 ocp4_workload_nvidia_gpu_operator_automatic_install_plan_approval: true
 ocp4_workload_nvidia_gpu_operator_starting_csv: ""
 # ocp4_workload_nvidia_gpu_operator_starting_csv: gpu-operator-certified.v25.3.1
+ocp4_workload_nvidia_gpu_operator_ignore_csv_error: false
 ocp4_workload_nvidia_gpu_operator_wait_for_deploy: true
 
 ocp4_workload_nvidia_gpu_operator_create_dashboard: false
