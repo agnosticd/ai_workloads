@@ -1,0 +1,13 @@
+---
+# Any internal variables should be defined here.
+# Variable names must start with a single underscore (_) followed by the workload role name
+# Variable values should be empty to indicate that they will be set during the workload run.
+
+# Internal namespace variable for operator installation
+_ocp4_workload_ols_namespace: ""
+
+# Azure AD authentication variables (set during setup_azure_token.yml)
+_child_app_id: ""
+_child_client_secret: ""
+_child_service_principal_object_id: ""
+_child_access_token: ""

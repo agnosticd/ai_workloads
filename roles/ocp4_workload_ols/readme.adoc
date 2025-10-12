@@ -1,0 +1,35 @@
+= ocp4_workload_ols - Deploy OpenShift Lightspeed on OpenShift Cluster
+
+== Role overview
+
+* This role installs the OpenShift Lightspeed Operator into an OpenShift cluster.
+
+* You need to have an API token or credentials to the LLM model you want OLS to connect to.
+
+It consists of the following task files:
+
+** Tasks: pre_workload.yaml - Validates variables and environment prerequisites.
+*** Debug task will print out: `Pre-Workload tasks completed successfully.`
+
+** Tasks: workload.yaml - Deploys and configures OpenShift Lightspeed.
+*** This playbook creates the following OpenShift resources:
+**** Namespace (openshift-lightspeed)
+**** Operator subscription (if ocp4_workload_ols_install_operator is true)
+**** Authentication secrets (token or API key based)
+**** OLSConfig to connect to an LLM model
+
+** Tasks: post_workload.yaml - Used to configure the workload after deployment.
+*** This role doesn't do anything here.
+*** Debug task will print out: `Workload Tasks completed successfully.`
+
+** Tasks: remove_workload.yaml - Used to delete external resources.
+*** This role removes Azure App Registrations and Service Principals (if token-based auth was used).
+*** Note: OpenShift cluster resources are not removed as the cluster will be destroyed.
+*** Debug task will print out: `Workload removal completed successfully.`
+
+== The defaults variable file
+
+* This file ./defaults/main.yaml contains all the variables you need to define to control the deployment of your workload.
+* The variable ocp_username is mandatory to assign the workload to the correct OpenShift user.
+* A variable silent=True can be passed to suppress debug messages.
+* You can modify any of these default values by adding -e "variable_name=variable_value" to the command line.

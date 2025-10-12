@@ -1,0 +1,19 @@
+---
+# --------------------------------------------------
+# Do not modify this file
+# --------------------------------------------------
+- name: Running workload provision tasks
+  when: ACTION == "provision"
+  block:
+    - name: Running Pre Workload Tasks
+      ansible.builtin.include_tasks: pre_workload.yaml
+
+    - name: Running Workload Tasks
+      ansible.builtin.include_tasks: workload.yaml
+
+    - name: Running Post Workload Tasks
+      ansible.builtin.include_tasks: post_workload.yaml
+
+- name: Running workload removal tasks
+  when: ACTION == "destroy"
+  ansible.builtin.include_tasks: remove_workload.yaml

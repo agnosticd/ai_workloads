@@ -1,0 +1,16 @@
+---
+galaxy_info:
+  role_name: ocp4_workload_ols
+  author: Red Hat, Ritesh Shah (rshah@redhat.com)
+  description: |
+    Deploy OpenShift Lightspeed on an OpenShift 4 cluster
+  license: MIT
+  min_ansible_version: "2.9"
+  platforms:
+  - linux
+  galaxy_tags:
+  - ocp
+  - openshift
+  - lightspeed
+  - ols
+dependencies: []
