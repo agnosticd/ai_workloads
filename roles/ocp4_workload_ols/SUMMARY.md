@@ -36,25 +36,25 @@ The `ocp4_workload_ols` role has been copied from agnosticd to agDv2/ai_workload
 ## Files Overview
 
 ### Created
-- `tasks/setup_azure_token.yml` - Azure AD authentication (extracted from main workflow)
-- `vars/main.yml` - Internal variables documentation (AgnosticD v2 requirement)
+- `tasks/setup_azure_token.yaml` - Azure AD authentication (extracted from main workflow)
 - `CHANGES.md` - Detailed change documentation
 - `SUMMARY.md` - This file
+- `PR_DESCRIPTION.md` - Pull request description
 
 ### Modified
-- `tasks/main.yml` - Updated for AgnosticD v2 structure (provision/destroy instead of create/remove)
-- `tasks/workload.yml` - Simplified from 210 to 67 lines
-- `tasks/remove_workload.yml` - Rewritten to use Graph API, focus on external resources only
-- `tasks/pre_workload.yml` - Added variable validation
-- `tasks/remove_ols_operator.yml` - Fixed typo (lighspeed → lightspeed)
-- `defaults/main.yml` - Updated for v2 standards, added debug and demo control variables
-- `meta/main.yml` - Updated for AgnosticD v2 metadata standards (MIT license, min_ansible_version, etc.)
+- `tasks/main.yaml` - Updated for AgnosticD v2 structure (provision/destroy instead of create/remove)
+- `tasks/workload.yaml` - Simplified from 210 to 67 lines
+- `tasks/remove_workload.yaml` - Rewritten to use Graph API, focus on external resources only
+- `tasks/pre_workload.yaml` - Added variable validation
+- `tasks/remove_ols_operator.yaml` - Fixed typo (lighspeed → lightspeed)
+- `defaults/main.yaml` - Updated for v2 standards, added debug and demo control variables
+- `meta/main.yaml` - Updated for AgnosticD v2 metadata standards (MIT license, min_ansible_version, etc.)
+- `readme.adoc` - Updated for accuracy and .yaml extensions
 
 ### Unchanged
-- `tasks/post_workload.yml`
-- `tasks/install_ols_operator.yml`
-- All `templates/*.j2` files
-- `readme.adoc`
+- `tasks/post_workload.yaml`
+- `tasks/install_ols_operator.yaml`
+- All `templates/*.yaml.j2` files
 
 ## New Variables
 

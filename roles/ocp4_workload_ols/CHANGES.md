@@ -209,17 +209,8 @@ The role has been optimized for robustness, performance, and maintainability wit
 - Standardized author format: `Red Hat, Name (email)`
 - Updated galaxy_tags: `ocp4` → `ocp` (consistent with v2 roles)
 
-#### Created vars/main.yml
-**File:** `vars/main.yml` (new)
-
-**Changes:**
-- Added file to document internal variables (AgnosticD v2 convention)
-- Listed all runtime variables that are set during execution:
-  - `_ocp4_workload_ols_namespace`
-  - `_child_app_id`, `_child_client_secret`, `_child_service_principal_object_id`, `_child_access_token`
-
-#### Updated defaults/main.yml
-**File:** `defaults/main.yml`
+#### Updated defaults/main.yaml
+**File:** `defaults/main.yaml`
 
 **Changes:**
 - Changed `ocp_username: opentlc-mgr` → `ocp_username: "system:admin"` (AgnosticD v2 standard)
@@ -227,19 +218,20 @@ The role has been optimized for robustness, performance, and maintainability wit
 - Removed `become_override` and `silent` variables (not used in v2)
 
 ## Files Created
-- `tasks/setup_azure_token.yml` - Azure AD authentication setup
-- `vars/main.yml` - Internal variables documentation
+- `tasks/setup_azure_token.yaml` - Azure AD authentication setup
 - `CHANGES.md` - This file
 - `SUMMARY.md` - Quick reference guide
+- `PR_DESCRIPTION.md` - Pull request description
 
 ## Files Modified
-- `tasks/main.yml` - Updated for AgnosticD v2 structure
-- `tasks/workload.yml` - Simplified and reorganized
-- `tasks/remove_workload.yml` - Complete rewrite using Graph API
-- `tasks/pre_workload.yml` - Added validation logic
-- `tasks/remove_ols_operator.yml` - Fixed typo
-- `defaults/main.yml` - Updated for v2 standards, added debug and broken pod control variables
-- `meta/main.yml` - Updated for AgnosticD v2 metadata standards
+- `tasks/main.yaml` - Updated for AgnosticD v2 structure
+- `tasks/workload.yaml` - Simplified and reorganized
+- `tasks/remove_workload.yaml` - Complete rewrite using Graph API
+- `tasks/pre_workload.yaml` - Added validation logic
+- `tasks/remove_ols_operator.yaml` - Fixed typo
+- `defaults/main.yaml` - Updated for v2 standards, added debug and broken pod control variables
+- `meta/main.yaml` - Updated for AgnosticD v2 metadata standards
+- `readme.adoc` - Updated for accuracy and .yaml extensions
 
 ## Files Unchanged
 - `tasks/post_workload.yml` - No changes needed
