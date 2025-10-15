@@ -20,9 +20,10 @@
   when: not ocp4_workload_ols_token | bool
   assert:
     that:
-      - ocp4_workload_ols_api_token_secret is defined
-      - ocp4_workload_ols_api_token_secret | length > 0
-    fail_msg: "API key authentication is enabled but ocp4_workload_ols_api_token_secret is not defined"
+      - ocp4_workload_ols_api_token is defined
+      - ocp4_workload_ols_api_token != "changeme"
+      - ocp4_workload_ols_api_token | length > 0
+    fail_msg: "API key authentication is enabled but ocp4_workload_ols_api_token is not properly configured. Please check defaults/main.yaml"
 
 - name: Validate AI platform is supported
   when: ocp4_workload_ai_platform is defined
