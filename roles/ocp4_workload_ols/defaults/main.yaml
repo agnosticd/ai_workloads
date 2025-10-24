@@ -45,8 +45,8 @@ ocp4_workload_ols_csv_nameprefix: lightspeed-operator
 ocp4_workload_ols_use_catalog_snapshot: false
 
 # Catalog source name (should be unique in the cluster)
-# ocp4_workload_ols_catalogsource_name: openshift-lightspeed-operator-catalog
-# ocp4_workload_ols_catalogsource_namespace: openshift-marketplace
+ocp4_workload_ols_catalogsource_name: openshift-lightspeed-operator-catalog
+ocp4_workload_ols_catalogsource_namespace: openshift-marketplace
 
 # Catalog snapshot image and tag
 ocp4_workload_ols_catalog_snapshot_image: quay.io/openshift-lightspeed/lightspeed-catalog
