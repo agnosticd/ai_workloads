@@ -27,7 +27,7 @@
     - name: Find Child App by Display Name
       uri:
         # yamllint disable rule:line-length
-        url: "https://graph.microsoft.com/v1.0/applications?$filter=displayName eq '{{ ocp4_workload_ols_child_app_display_name }}-{{ guid }}'"
+        url: "https://graph.microsoft.com/v1.0/applications?$filter=startswith(displayName,'{{ ocp4_workload_ols_child_app_display_name }}-{{ guid }}')"
         # yamllint enable rule:line-length
         method: GET
         headers:
@@ -56,7 +56,7 @@
       when: app_search.json.value | length > 0
       uri:
         # yamllint disable rule:line-length
-        url: "https://graph.microsoft.com/v1.0/applications?$filter=displayName eq '{{ ocp4_workload_ols_child_app_display_name }}-{{ guid }}'"
+        url: "https://graph.microsoft.com/v1.0/applications?$filter=startswith(displayName,'{{ ocp4_workload_ols_child_app_display_name }}-{{ guid }}')"
         # yamllint enable rule:line-length
         method: GET
         headers:
