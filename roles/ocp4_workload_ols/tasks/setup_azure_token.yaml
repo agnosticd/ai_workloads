@@ -161,10 +161,12 @@
           content: "What is the largest city in India?"
       max_tokens: 100
     body_format: json
+    status_code: [200, 401]  # Accept 401 during retries while RBAC propagates
   register: ai_service_response
-  until: ai_service_response is succeeded
-  retries: 3
-  delay: 5
+  until: ai_service_response.status == 200
+  retries: 12
+  delay: 10
+  failed_when: ai_service_response.status != 200
 
 - name: Display AI Service Response
   debug:
