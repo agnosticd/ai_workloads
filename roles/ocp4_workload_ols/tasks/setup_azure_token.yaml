@@ -123,6 +123,11 @@
   delay: 5
   failed_when: false  # Don't fail if group membership isn't found immediately
 
+- name: Wait for Azure RBAC to propagate group permissions
+  pause:
+    seconds: 60
+    prompt: "Waiting for Azure RBAC permissions to inherit from group (60s minimum required)"
+
 - name: Get Token for Child App
   uri:
     url: "https://login.microsoftonline.com/{{ ocp4_workload_ols_azure_tenant_id }}/oauth2/v2.0/token"
