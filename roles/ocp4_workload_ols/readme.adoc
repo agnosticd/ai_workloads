@@ -18,6 +18,15 @@ It consists of the following task files:
 **** Authentication secrets (token or API key based)
 **** OLSConfig to connect to an LLM model
 
+** Tasks: install_ols_operator.yaml - Deploys the OLS operator from OperatorHub or catalog snapshot.
+*** Creates namespace, catalog source (if using snapshots), and operator subscription.
+
+** Tasks: setup_azure_token.yaml - Manages Azure AD token-based authentication (when ocp4_workload_ols_token is true).
+*** Creates Azure AD app registration and service principal
+*** Adds service principal to Azure AD group for RBAC inheritance
+*** Validates token works with Azure OpenAI service
+*** Waits for RBAC propagation (30s + retry logic)
+
 ** Tasks: post_workload.yaml - Used to configure the workload after deployment.
 *** This role doesn't do anything here.
 *** Debug task will print out: `Workload Tasks completed successfully.`
