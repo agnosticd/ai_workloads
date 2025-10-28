@@ -19,10 +19,6 @@ ocp4_workload_ols_namespace: openshift-lightspeed
 # OLS Operator Settings
 # --------------------------------
 
-# Print the access information for OLS (useful for student environments)
-# Prints route, userid and password
-ocp4_workload_ols_print_access_information: false
-
 # Channel to use for the OLS operator subscription
 ocp4_workload_ols_channel: stable
 
@@ -56,8 +52,6 @@ ocp4_workload_ols_catalog_snapshot_image_tag: "stable-v0.1.0"
 # OLS Configuration
 # --------------------------------
 
-ocp4_workload_ols_api_version: ols.openshift.io/v1alpha1
-
 # AI Platform to use: azure, openai, watson, openshiftai
 ocp4_workload_ai_platform: azure
 
@@ -86,7 +80,6 @@ ocp4_workload_ols_main_client_id: "changeme"
 ocp4_workload_ols_main_client_secret: "changeme"
 ocp4_workload_ols_azure_tenant_id: "changeme"
 ocp4_workload_ols_azure_group_id: "changeme"
-ocp4_workload_ols_azure_region: "eastus"
 ocp4_workload_ols_child_app_display_name: "RHDP-lightspeed"
 
 # --------------------------------
@@ -97,7 +90,7 @@ ocp4_workload_ols_child_app_display_name: "RHDP-lightspeed"
 ocp4_workload_ols_llm_providers_models_name: gpt-4
 ocp4_workload_ols_llm_providers_provide_name: Azure
 ocp4_workload_ols_llm_providers_provide_type: azure_openai
-ocp4_workload_ols_llm_providers_url: 'https://llm-gpt4-lightspeed.openai.azure.com/'
+ocp4_workload_ols_llm_providers_url: 'https://llm-gpt4-lightspeed.cognitiveservices.azure.com/'
 ocp4_workload_ols_llm_deploymentname: gpt-4
 ocp4_workload_ols_azure_api_version: 2025-01-01-preview
 
