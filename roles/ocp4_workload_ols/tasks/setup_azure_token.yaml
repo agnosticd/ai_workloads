@@ -125,8 +125,8 @@
 
 - name: Wait for Azure RBAC to propagate group permissions
   pause:
-    seconds: 60
-    prompt: "Waiting for Azure RBAC permissions to inherit from group (60s minimum required)"
+    seconds: 30
+    prompt: "Waiting for Azure RBAC permissions to inherit from group"
 
 - name: Get Token for Child App
   uri:
