@@ -16,7 +16,6 @@ spec:
       type: "{{ ocp4_workload_ols_llm_providers_provide_type }}"
       # Use the URL you recorded after you created the deployment
       url: "{{ ocp4_workload_ols_llm_providers_url }}"
-
   ols:
     queryFilters:
     - name: ip-address
@@ -25,7 +24,7 @@ spec:
     defaultModel: "{{ ocp4_workload_ols_defaultmodel }}"
     defaultProvider: "{{ ocp4_workload_ols_defaultprovider }}"
     logLevel: "{{ ocp4_workload_ols_loglevel }}"
-    introspectionEnabled: {{ ocp4_workload_ols_introspection_enabled | default(false) | bool }}
+    introspectionEnabled: {{ ocp4_workload_ols_introspection_enabled | bool }}
 {% if ocp4_workload_ols_enable_rag | bool %}
     rag:
       - image: "{{ ocp4_workload_ols_rag_image }}"
