@@ -31,11 +31,6 @@
       - ocp4_workload_ai_platform in ['azure', 'openai', 'watson', 'openshiftai']
     fail_msg: "ocp4_workload_ai_platform must be one of: azure, openai, watson, openshiftai"
 
-- name: pre_workload tasks complete
-  ansible.builtin.debug:
-    msg: "Pre-Workload tasks completed successfully."
-  when: not silent | bool
-
 # Ensure that the openshift-lightspeed namespace is always created
 - name: Ensure openshift-lightspeed namespace exists
   kubernetes.core.k8s:
