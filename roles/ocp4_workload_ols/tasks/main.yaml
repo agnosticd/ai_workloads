@@ -4,8 +4,8 @@
 # --------------------------------------------------
 - name: Running workload provision tasks
   when: ACTION == "provision"
-  ansible.builtin.include_tasks: workload.yml
+  ansible.builtin.include_tasks: workload.yaml
 
 - name: Running workload removal tasks
   when: ACTION == "destroy"
-  ansible.builtin.include_tasks: remove_workload.yml
+  ansible.builtin.include_tasks: remove_workload.yaml
