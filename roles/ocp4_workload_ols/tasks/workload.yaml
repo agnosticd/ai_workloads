@@ -87,9 +87,3 @@
   when: ocp4_workload_ols_create_broken_pod | default(false)
   kubernetes.core.k8s:
     template: deploy_faulty_pod.yaml.j2
-
-# Leave this as the last task in the playbook.
-- name: workload tasks complete
-  ansible.builtin.debug:
-    msg: "Workload Tasks completed successfully."
-  when: not silent | bool
