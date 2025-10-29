@@ -1,0 +1,80 @@
+---
+# Note: OpenShift cluster resources (operator, secrets, namespaces, etc.) are not
+# cleaned up here as the entire cluster will be destroyed. This removal only handles
+# external resources (Azure App Registrations) that persist after cluster deletion.
+
+# Remove Azure App Registration and Service Principal (if token auth was used)
+- name: Remove Azure App and Service Principal
+  when: ocp4_workload_ols_get_token | bool
+  block:
+    - name: Get Token for Master App
+      ansible.builtin.uri:
+        url: "https://login.microsoftonline.com/{{ ocp4_workload_ols_azure_tenant_id }}/oauth2/v2.0/token"
+        method: POST
+        headers:
+          Content-Type: "application/x-www-form-urlencoded"
+        # yamllint disable rule:line-length
+        body: "grant_type=client_credentials&client_id={{ ocp4_workload_ols_main_client_id }}&client_secret={{ ocp4_workload_ols_main_client_secret }}&scope=https://graph.microsoft.com/.default"
+        # yamllint enable rule:line-length
+        body_format: form-urlencoded
+        return_content: true
+        status_code: 200
+      register: master_token_response
+      until: master_token_response is succeeded
+      retries: 3
+      delay: 5
+
+    - name: Set Main Access Token
+      ansible.builtin.set_fact:
+        master_access_token: "{{ master_token_response.json.access_token }}"
+
+    - name: Find Child App by Display Name
+      ansible.builtin.uri:
+        # yamllint disable rule:line-length
+        url: "https://graph.microsoft.com/v1.0/applications?$filter=startswith(displayName,'{{ ocp4_workload_ols_child_app_display_name }}-{{ guid }}')"
+        # yamllint enable rule:line-length
+        method: GET
+        headers:
+          Authorization: "Bearer {{ master_access_token }}"
+        status_code: 200
+      register: app_search
+      until: app_search is succeeded
+      retries: 3
+      delay: 5
+
+    - name: Delete Child App Registration
+      when: app_search.json.value | length > 0
+      ansible.builtin.uri:
+        url: "https://graph.microsoft.com/v1.0/applications/{{ item.id }}"
+        method: DELETE
+        headers:
+          Authorization: "Bearer {{ master_access_token }}"
+        status_code: [204, 404]  # 204 = deleted, 404 = already gone
+      loop: "{{ app_search.json.value }}"
+      register: app_delete_result
+      until: app_delete_result is succeeded
+      retries: 3
+      delay: 5
+
+    - name: Verify App Deletion
+      when: app_search.json.value | length > 0
+      ansible.builtin.uri:
+        # yamllint disable rule:line-length
+        url: "https://graph.microsoft.com/v1.0/applications?$filter=startswith(displayName,'{{ ocp4_workload_ols_child_app_display_name }}-{{ guid }}')"
+        # yamllint enable rule:line-length
+        method: GET
+        headers:
+          Authorization: "Bearer {{ master_access_token }}"
+        status_code: 200
+      register: verify_deletion
+      until: verify_deletion.json.value | length == 0
+      retries: 6
+      delay: 5
+      failed_when: false  # Don't fail if verification times out
+
+    - name: Report Azure cleanup status
+      ansible.builtin.debug:
+        msg: >-
+          {{ 'Azure app registration deleted successfully'
+             if app_search.json.value | length > 0
+             else 'No Azure app registration found to delete' }}
