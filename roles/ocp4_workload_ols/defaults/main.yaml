@@ -1,10 +1,4 @@
 ---
-# ocp_username can be set by the provisioner if the workload is applied to a
-# shared cluster to set up for the requesting user.
-# The default, "system:admin", is not used for roles that are deployed as part of a whole
-# OpenShift cluster provision run.
-ocp_username: "system:admin"
-
 # Install the Operator from OperatorHub
 ocp4_workload_ols_install_operator: true
 
@@ -62,16 +56,17 @@ ocp4_workload_ols_rag_image: 'quay.io/dialvare/acme-byok:latest'
 # --------------------------------
 # Authentication Configuration
 # --------------------------------
+# Azure Bearer Token Authentication (when ocp4_workload_ols_get_token is true)
+# Setting this to true will provision a unique Child App & SP in Azure
+# Always set this to true for production workloads so that the secret is unique
+# to the provision.
+# Set to false to use API key authentication instead for development purposes
+ocp4_workload_ols_get_token: true
 
-# API Key Authentication (when ocp4_workload_ols_token is false)
+# API Key Authentication (when ocp4_workload_ols_get_token is false)
 # IMPORTANT: This must be set to your actual API key before deployment
 # DO NOT commit real credentials to version control
 ocp4_workload_ols_api_token: "changeme"
-ocp4_workload_ols_api_token_secret: "{{ ocp4_workload_ols_api_token }}"
-
-# Azure Bearer Token Authentication (when ocp4_workload_ols_token is true)
-# Set to false to use API key authentication instead
-ocp4_workload_ols_token: true
 
 # Azure AD credentials for token-based authentication
 # IMPORTANT: These must be set to actual values before deployment
@@ -114,6 +109,3 @@ ocp4_workload_ols_debug: false
 # Create broken pod for demo/testing purposes
 # Set to true only in demo/training environments
 ocp4_workload_ols_create_broken_pod: false
-
-# Suppress informational messages
-silent: false

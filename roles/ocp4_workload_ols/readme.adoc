@@ -21,7 +21,7 @@ It consists of the following task files:
 ** Tasks: install_ols_operator.yaml - Deploys the OLS operator from OperatorHub or catalog snapshot.
 *** Creates namespace, catalog source (if using snapshots), and operator subscription.
 
-** Tasks: setup_azure_token.yaml - Manages Azure AD token-based authentication (when ocp4_workload_ols_token is true).
+** Tasks: setup_azure_token.yaml - Manages Azure AD token-based authentication (when ocp4_workload_ols_get_token is true).
 *** Creates Azure AD app registration and service principal
 *** Adds service principal to Azure AD group for RBAC inheritance
 *** Validates token works with Azure OpenAI service
