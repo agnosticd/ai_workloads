@@ -55,7 +55,7 @@ ocp4_workload_ols_catalog_snapshot_image_tag: "stable-v0.1.0"
 # AI Platform to use: azure, openai, watson, openshiftai
 ocp4_workload_ai_platform: azure
 
-ocp4_workload_ols_introspection_enabled: false
+ocp4_workload_ols_introspection_enabled: true
 ocp4_workload_ols_enable_rag: false
 ocp4_workload_ols_rag_image: 'quay.io/dialvare/acme-byok:latest'
 
