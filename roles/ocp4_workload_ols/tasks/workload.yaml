@@ -1,7 +1,40 @@
-# Implement your Workload deployment tasks here
-- name: Setting up workload for user
+# Validate required variables are set
+- name: Validate Azure token authentication variables
+  when: ocp4_workload_ols_get_token | bool
+  assert:
+    that:
+      - ocp4_workload_ols_azure_tenant_id is defined
+      - ocp4_workload_ols_azure_tenant_id != "changeme"
+      - ocp4_workload_ols_main_client_id is defined
+      - ocp4_workload_ols_main_client_id != "changeme"
+      - ocp4_workload_ols_main_client_secret is defined
+      - ocp4_workload_ols_main_client_secret != "changeme"
+      - ocp4_workload_ols_azure_group_id is defined
+      - ocp4_workload_ols_azure_group_id != "changeme"
+      - ocp4_workload_ols_child_app_display_name is defined
+      - guid is defined
+    fail_msg: "Azure token authentication is enabled but required variables are not properly configured. Please check defaults/main.yaml"
+
+- name: Validate API key authentication variables
+  when: not ocp4_workload_ols_get_token | bool
+  assert:
+    that:
+      - ocp4_workload_ols_api_token is defined
+      - ocp4_workload_ols_api_token != "changeme"
+      - ocp4_workload_ols_api_token | length > 0
+    fail_msg: "API key authentication is enabled but ocp4_workload_ols_api_token is not properly configured. Please check defaults/main.yaml"
+
+- name: Validate AI platform is supported
+  when: ocp4_workload_ai_platform is defined
+  assert:
+    that:
+      - ocp4_workload_ai_platform in ['azure', 'openai', 'watson', 'openshiftai']
+    fail_msg: "ocp4_workload_ai_platform must be one of: azure, openai, watson, openshiftai"
+
+- name: pre_workload tasks complete
   debug:
-    msg: "Setting up workload for user ocp_username = {{ ocp_username }}"
+    msg: "Pre-Workload tasks completed successfully."
+  when: not silent | bool
 
 # Ensure that the openshift-lightspeed namespace is always created
 - name: Ensure openshift-lightspeed namespace exists
@@ -10,7 +43,6 @@
     kind: Namespace
     name: openshift-lightspeed
     state: present
-  register: ols_namespace_result
 
 # Install the OLS Operator
 - name: Install OLS Operator
@@ -22,7 +54,7 @@
   block:
     # Setup Azure AI Cognitive Services (Token-based authentication)
     - name: Setup Azure AI Cognitive Services
-      when: ocp4_workload_ols_token | bool
+      when: ocp4_workload_ols_get_token | bool
       include_tasks: setup_azure_token.yaml
 
     # Create authentication secrets based on auth type
@@ -33,11 +65,11 @@
         wait_timeout: 300
       vars:
         _secret_template: >-
-          {{ 'templates/create_secret_token.yaml.j2' if ocp4_workload_ols_token
+          {{ 'templates/create_secret_token.yaml.j2' if ocp4_workload_ols_get_token
              else 'templates/create_secret.yaml.j2' }}
 
     - name: Create Azure App Service Principal Secret
-      when: ocp4_workload_ols_token | bool
+      when: ocp4_workload_ols_get_token | bool
       kubernetes.core.k8s:
         definition: "{{ lookup('ansible.builtin.template', 'templates/create_azure_api_token.yaml.j2') }}"
         wait: true
@@ -52,7 +84,7 @@
         wait_timeout: 300
       vars:
         _olsconfig_template: >-
-          {{ 'templates/install_azure_app_sp_olsconfig.yaml.j2' if ocp4_workload_ols_token
+          {{ 'templates/install_azure_app_sp_olsconfig.yaml.j2' if ocp4_workload_ols_get_token
              else 'templates/install_' + ocp4_workload_ai_platform + '_olsconfig.yaml.j2' }}
 
 # Create broken pod for demo/testing purposes
