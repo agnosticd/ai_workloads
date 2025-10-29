@@ -1,6 +1,6 @@
 ---
 - name: Set Variables
-  set_fact:
+  ansible.builtin.set_fact:
     _ocp4_workload_ols_namespace: "{{ ocp4_workload_ols_namespace }}"
 
 - name: Install OpenShift LightSpeed Operator
