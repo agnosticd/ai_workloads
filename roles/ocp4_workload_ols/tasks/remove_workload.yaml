@@ -1,10 +1,14 @@
 ---
+# Note: OpenShift cluster resources (operator, secrets, namespaces, etc.) are not
+# cleaned up here as the entire cluster will be destroyed. This removal only handles
+# external resources (Azure App Registrations) that persist after cluster deletion.
+
 # Remove Azure App Registration and Service Principal (if token auth was used)
 - name: Remove Azure App and Service Principal
-  when: ocp4_workload_ols_token | bool
+  when: ocp4_workload_ols_get_token | bool
   block:
     - name: Get Token for Master App
-      uri:
+      ansible.builtin.uri:
         url: "https://login.microsoftonline.com/{{ ocp4_workload_ols_azure_tenant_id }}/oauth2/v2.0/token"
         method: POST
         headers:
@@ -21,11 +25,11 @@
       delay: 5
 
     - name: Set Main Access Token
-      set_fact:
+      ansible.builtin.set_fact:
         master_access_token: "{{ master_token_response.json.access_token }}"
 
     - name: Find Child App by Display Name
-      uri:
+      ansible.builtin.uri:
         # yamllint disable rule:line-length
         url: "https://graph.microsoft.com/v1.0/applications?$filter=startswith(displayName,'{{ ocp4_workload_ols_child_app_display_name }}-{{ guid }}')"
         # yamllint enable rule:line-length
@@ -40,7 +44,7 @@
 
     - name: Delete Child App Registration
       when: app_search.json.value | length > 0
-      uri:
+      ansible.builtin.uri:
         url: "https://graph.microsoft.com/v1.0/applications/{{ item.id }}"
         method: DELETE
         headers:
@@ -54,7 +58,7 @@
 
     - name: Verify App Deletion
       when: app_search.json.value | length > 0
-      uri:
+      ansible.builtin.uri:
         # yamllint disable rule:line-length
         url: "https://graph.microsoft.com/v1.0/applications?$filter=startswith(displayName,'{{ ocp4_workload_ols_child_app_display_name }}-{{ guid }}')"
         # yamllint enable rule:line-length
@@ -69,17 +73,8 @@
       failed_when: false  # Don't fail if verification times out
 
     - name: Report Azure cleanup status
-      debug:
+      ansible.builtin.debug:
         msg: >-
           {{ 'Azure app registration deleted successfully'
              if app_search.json.value | length > 0
              else 'No Azure app registration found to delete' }}
-
-# Note: OpenShift cluster resources (operator, secrets, namespaces, etc.) are not
-# cleaned up here as the entire cluster will be destroyed. This removal only handles
-# external resources (Azure App Registrations) that persist after cluster deletion.
-
-- name: Workload removal complete
-  debug:
-    msg: "Workload removal completed successfully. External Azure resources cleaned up."
-  when: not silent | bool
