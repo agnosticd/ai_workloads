@@ -10,7 +10,7 @@
     wait_timeout: 60
 
 # Deploy the faulty pod after namespace is confirmed created
-- name: Deploy faulty pod
+- name: Deploy broken pod
   kubernetes.core.k8s:
     template: deploy_broken_pod.yaml.j2
     wait: true
