@@ -13,5 +13,4 @@
 - name: Deploy broken pod
   kubernetes.core.k8s:
     template: deploy_broken_pod.yaml.j2
-    wait: true
-    wait_timeout: 300
+    wait: false
