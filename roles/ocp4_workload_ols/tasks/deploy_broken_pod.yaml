@@ -1,0 +1,17 @@
+---
+# Create namespace first to avoid race condition
+- name: Create broken namespace
+  kubernetes.core.k8s:
+    api_version: v1
+    kind: Namespace
+    name: broken
+    state: present
+    wait: true
+    wait_timeout: 60
+
+# Deploy the faulty pod after namespace is confirmed created
+- name: Deploy broken pod
+  kubernetes.core.k8s:
+    template: deploy_broken_pod.yaml.j2
+    wait: true
+    wait_timeout: 300
