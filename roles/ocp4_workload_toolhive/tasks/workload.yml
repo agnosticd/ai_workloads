@@ -4,6 +4,8 @@
     name: toolhive-operator-crds
     chart_ref: "{{ ocp4_workload_toolhive_helm_chart_crds }}"
     release_state: present
+    release_namespace: "{{ ocp4_workload_toolhive_namespace }}"
+    create_namespace: true
     update_repo_cache: true
 
 - name: Install toolhive-operator Helm chart
