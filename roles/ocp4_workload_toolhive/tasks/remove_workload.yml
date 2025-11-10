@@ -1,0 +1,19 @@
+---
+- name: Delete toolhive-operator Helm chart
+  kubernetes.core.helm:
+    state: absent
+    name: toolhive-operator
+    release_namespace: "{{ ocp4_workload_toolhive_namespace }}"
+    
+- name: Delete toolhive-operator-crds Helm chart
+  kubernetes.core.helm:
+    state: absent
+    name: toolhive-operator-crds
+    release_namespace: "{{ ocp4_workload_toolhive_namespace }}"
+
+- name: Delete toolhive-system namespace
+  kubernetes.core.k8s:
+    state: absent
+    api_version: v1
+    kind: Namespace
+    name: "{{ ocp4_workload_toolhive_namespace }}"

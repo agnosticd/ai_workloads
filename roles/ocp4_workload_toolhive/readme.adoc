@@ -1,0 +1,3 @@
+= ocp4_workload_toolhive - Install the ToolHive operator on the cluster
+
+See defaults/main.yml for variables to set.

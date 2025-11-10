@@ -1,0 +1,7 @@
+---
+ocp4_workload_toolhive_namespace: toolhive-system
+ocp4_workload_toolhive_helm_chart_crds: oci://ghcr.io/stacklok/toolhive/toolhive-operator-crds
+ocp4_workload_toolhive_helm_chart_operator: oci://ghcr.io/stacklok/toolhive/toolhive-operator
+ocp4_workload_toolhive_operator_image: ghcr.io/stacklok/toolhive/operator:v0.3.8
+ocp4_workload_toolhive_runner_image: ghcr.io/stacklok/toolhive/proxyrunner:v0.3.8
+ocp4_workload_toolhive_registry_api_image: ghcr.io/stacklok/thv-registry-api:latest
