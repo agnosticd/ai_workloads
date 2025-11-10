@@ -1,7 +1,7 @@
 ---
 - name: Install toolhive-operator-crds Helm chart
   kubernetes.core.helm:
-    name: "{{ ocp4_workload_toolhive_helm_chart_crds_name }}"
+    name: toolhive-operator-crds
     chart_ref: "{{ ocp4_workload_toolhive_helm_chart_crds }}"
     release_state: present
     update_repo_cache: true
