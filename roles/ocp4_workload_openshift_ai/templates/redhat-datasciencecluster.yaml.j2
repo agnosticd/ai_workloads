@@ -1,4 +1,5 @@
 ---
+{% if not _ocp4_workload_openshift_ai_version_3 %}
 apiVersion: datasciencecluster.opendatahub.io/v1
 kind: DataScienceCluster
 metadata:
@@ -12,17 +13,52 @@ spec:
     datasciencepipelines:
       managementState: {{ ocp4_workload_openshift_ai_datasciencepipelines }}
     kserve:
-      {{ ocp4_workload_openshift_ai_kserve_config | to_yaml | indent(6) }}
+      managementState: {{ ocp4_workload_openshift_ai_kserve }}
     kueue:
       managementState: {{ ocp4_workload_openshift_ai_kueue }}
     modelmeshserving:
       managementState: {{ ocp4_workload_openshift_ai_modelmeshserving }}
     modelregistry:
-      managementState: {{ ocp4_workload_openshift_ai_modelregistry }}
-      registriesNamespace: {{ ocp4_workload_openshift_ai_modelregistries_namespace }}
+      {{ ocp4_workload_openshift_ai_modelregistry_config | to_yaml | indent(6) }}
     ray:
       managementState: {{ ocp4_workload_openshift_ai_ray }}
     trustyai:
       managementState: {{ ocp4_workload_openshift_ai_trustyai }}
     workbenches:
       managementState: {{ ocp4_workload_openshift_ai_workbenches }}
+{% else %}
+apiVersion: datasciencecluster.opendatahub.io/v2
+kind: DataScienceCluster
+metadata:
+  name: default-dsc
+spec:
+  components:
+    codeflare:
+      managementState: {{ ocp4_workload_openshift_ai_codeflare }}
+    dashboard:
+      managementState: {{ ocp4_workload_openshift_ai_dashboard }}
+    datasciencepipelines:
+      managementState: {{ ocp4_workload_openshift_ai_datasciencepipelines }}
+    kserve:
+      managementState: {{ ocp4_workload_openshift_ai_kserve }}
+    kueue:
+      managementState: {{ ocp4_workload_openshift_ai_kueue }}
+    modelmeshserving:
+      managementState: {{ ocp4_workload_openshift_ai_modelmeshserving }}
+    modelregistry:
+      {{ ocp4_workload_openshift_ai_modelregistry_config | to_yaml | indent(6) }}
+    ray:
+      managementState: {{ ocp4_workload_openshift_ai_ray }}
+    trustyai:
+      managementState: {{ ocp4_workload_openshift_ai_trustyai }}
+    workbenches:
+      managementState: {{ ocp4_workload_openshift_ai_workbenches }}
+    feastoperator:
+      managementState: "{{ ocp4_workload_openshift_ai_feastoperator }}"
+    llamastackoperator:
+      managementState: "{{ ocp4_workload_openshift_ai_llamastackoperator }}"
+    aipipelines:
+      managementState: "{{ ocp4_workload_openshift_ai_aipipelines }}"
+    trainingoperator:
+      managementState: "{{ ocp4_workload_openshift_ai_trainingoperator }}"
+{% endif %}
