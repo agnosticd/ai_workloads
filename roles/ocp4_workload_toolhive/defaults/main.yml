@@ -1,0 +1,11 @@
+---
+ocp4_workload_toolhive_namespace: toolhive-system
+
+# Check https://github.com/stacklok/toolhive/pkgs/container/toolhive%2Ftoolhive-operator-crds for versions
+ocp4_workload_toolhive_helm_chart_crds: oci://ghcr.io/stacklok/toolhive/toolhive-operator-crds:0.0.53
+# Check https://github.com/stacklok/toolhive/pkgs/container/toolhive%2Ftoolhive-operator for versions
+ocp4_workload_toolhive_helm_chart_operator: oci://ghcr.io/stacklok/toolhive/toolhive-operator:0.4.0
+
+ocp4_workload_toolhive_operator_image: ghcr.io/stacklok/toolhive/operator:v0.3.8
+ocp4_workload_toolhive_runner_image: ghcr.io/stacklok/toolhive/proxyrunner:v0.3.8
+ocp4_workload_toolhive_registry_api_image: ghcr.io/stacklok/thv-registry-api:latest

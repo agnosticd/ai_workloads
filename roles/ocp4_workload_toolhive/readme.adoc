@@ -1,0 +1,91 @@
+= ocp4_workload_toolhive - Install the ToolHive operator on the cluster
+
+See defaults/main.yml for variables to set.
+
+to create a registry:
+
+[source,yaml]
+----
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: toolhive-registry-api
+  namespace: mcp-user1
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mcp-registry-data
+  namespace: mcp-user1
+data:
+  registry.json: |
+    {
+      "$schema": "https://raw.githubusercontent.com/stacklok/toolhive/main/pkg/registry/data/schema.json",
+      "version": "1.0.0",
+      "last_updated": "2025-01-14T00:00:00Z",
+      "servers": {
+        "github": {
+          "description": "GitHub API integration",
+          "tier": "Official",
+          "status": "Active",
+          "transport": "stdio",
+          "tools": ["create_issue", "search_repositories"],
+          "image": "ghcr.io/github/github-mcp-server:latest",
+          "tags": ["github", "api", "production"]
+        }
+      }
+    }
+---
+apiVersion: toolhive.stacklok.dev/v1alpha1
+kind: MCPRegistry
+metadata:
+  name: mcp-registry
+  namespace: mcp-user1
+spec:
+  displayName: "User 1 MCP Registry"
+  source:
+    type: configmap
+    configmap:
+      name: mcp-registry-data
+      key: registry.json
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: mcp-registry-api
+  namespace: mcp-user1
+spec:
+  port:
+    targetPort: http
+  to:
+    kind: Service
+    name: mcp-registry-api
+    weight: 100
+  wildcardPolicy: None
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+----
+
+[source,yaml]
+----
+---
+apiVersion: toolhive.stacklok.dev/v1alpha1
+kind: MCPServer
+metadata:
+  name: fetch
+  namespace: mcp-user1
+spec:
+  image: docker.io/mcp/fetch:latest
+  transport: stdio
+  proxyPort: 8080
+  mcpPort: 8080
+  resources:
+    limits:
+      cpu: "100m"
+      memory: "128Mi"
+    requests:
+      cpu: "50m"
+      memory: "64Mi"
+----
