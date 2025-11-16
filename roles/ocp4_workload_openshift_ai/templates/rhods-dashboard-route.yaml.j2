@@ -4,7 +4,7 @@ metadata:
   name: rhods-dashboard
   namespace: redhat-ods-applications
 spec:
-  host: data-science-gateway.{{ _ocp4_workload_openshift_ai_ingress_domain }}
+  host: data-science-gateway.{{ openshift_cluster_ingress_domain }}
   to:
     kind: Service
     name: rhods-dashboard

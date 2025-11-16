@@ -23,20 +23,6 @@
     namespace: openshift-operators
   register: r_csvs
 
-- name: Get cluster ingress config
-  kubernetes.core.k8s_info:
-    api_version: config.openshift.io/v1
-    kind: Ingress
-    name: cluster
-  register: r_ingress_config
-  until: r_ingress_config.resources is defined
-  retries: 10
-  delay: 30
-
-- name: Set ingress domain
-  ansible.builtin.set_fact:
-    _ocp4_workload_openshift_ai_ingress_domain: "{{ r_ingress_config.resources[0].spec.domain }}"
-
 - name: Find CSV for the rhods operator
   set_fact:
     _ocp4_workload_openshift_ai_installed_operator_csv: "{{ item.metadata.name }}"
@@ -56,11 +42,6 @@
   until: not r_ds_cluster.failed
   retries: 10
   delay: 30
-
-- name: Print Data Science Cluster for debugging
-  ansible.builtin.debug:
-    msg: r_ds_cluster
-    verbosity: 2
 
 - name: Check if Data Science Cluster is ready
   kubernetes.core.k8s_info:
