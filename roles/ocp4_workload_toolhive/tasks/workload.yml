@@ -12,7 +12,6 @@
     name: toolhive-operator
     chart_ref: "{{ ocp4_workload_toolhive_helm_chart_operator }}"
     release_namespace: "{{ ocp4_workload_toolhive_namespace }}"
-    release_name: toolhive-operator
     release_state: present
     create_namespace: true
     release_values: "{{ lookup('template', 'values.yaml.j2') | from_yaml }}"
