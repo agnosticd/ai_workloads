@@ -7,7 +7,7 @@ spec:
   host: data-science-gateway.{{ openshift_cluster_ingress_domain }}
   to:
     kind: Service
-    name: rhods-dashboard
+    name: data-science-gateway-data-science-gateway-class
     weight: 100
   port:
     targetPort: https
