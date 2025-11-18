@@ -20,7 +20,7 @@
   kubernetes.core.k8s_info:
     api_version: operators.coreos.com/v1alpha1
     kind: ClusterServiceVersion
-    namespace: openshift-operators
+    namespace: redhat-ods-operator
   register: r_csvs
 
 - name: Initialize CSV variable
