@@ -70,6 +70,9 @@
         method: GET
         return_content: true
       register: r_dcgm_dashboard_json
+      until: r_dcgm_dashboard_json is successful
+      retries: 5
+      delay: 30
 
     - name: Create NVIDIA DCGM Exporter Dashboard ConfigMap
       kubernetes.core.k8s:
