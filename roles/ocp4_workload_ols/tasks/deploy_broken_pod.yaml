@@ -9,6 +9,18 @@
     wait: true
     wait_timeout: 60
 
+# Wait for default service account to be created in the namespace
+- name: Wait for default service account to be created
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: ServiceAccount
+    name: default
+    namespace: broken
+  register: sa_result
+  until: sa_result.resources | length > 0
+  retries: 10
+  delay: 3
+
 # Deploy the faulty pod after namespace is confirmed created
 - name: Deploy broken pod
   kubernetes.core.k8s:
