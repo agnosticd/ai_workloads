@@ -26,6 +26,8 @@ spec:
       managementState: {{ ocp4_workload_openshift_ai_trustyai }}
     workbenches:
       managementState: {{ ocp4_workload_openshift_ai_workbenches }}
+    llamastackoperator:
+      managementState: "{{ ocp4_workload_openshift_ai_llamastackoperator }}"
 {% else %}
 apiVersion: datasciencecluster.opendatahub.io/v2
 kind: DataScienceCluster
