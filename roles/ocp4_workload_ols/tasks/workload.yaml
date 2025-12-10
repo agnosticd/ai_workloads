@@ -81,8 +81,3 @@
         _olsconfig_template: >-
           {{ 'install_azure_app_sp_olsconfig.yaml.j2' if ocp4_workload_ols_get_token
              else 'install_' + ocp4_workload_ai_platform + '_olsconfig.yaml.j2' }}
-
-# Create broken pod for demo/testing purposes
-- name: Create broken pod for demo
-  when: ocp4_workload_ols_create_broken_pod | default(false)
-  ansible.builtin.include_tasks: deploy_broken_pod.yaml
