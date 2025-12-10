@@ -50,8 +50,6 @@ ocp4_workload_ols_catalog_snapshot_image_tag: "stable-v0.1.0"
 ocp4_workload_ai_platform: azure
 
 ocp4_workload_ols_introspection_enabled: true
-ocp4_workload_ols_enable_rag: false
-ocp4_workload_ols_rag_image: 'quay.io/dialvare/acme-byok:latest'
 
 # --------------------------------
 # Authentication Configuration
@@ -105,7 +103,3 @@ ocp4_workload_ols_loglevel: DEBUG
 # Enable debug output (shows sensitive token information)
 # Set to true only for troubleshooting
 ocp4_workload_ols_debug: false
-
-# Create broken pod for demo/testing purposes
-# Set to true only in demo/training environments
-ocp4_workload_ols_create_broken_pod: false
