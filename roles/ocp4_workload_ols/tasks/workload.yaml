@@ -81,3 +81,115 @@
         _olsconfig_template: >-
           {{ 'install_azure_app_sp_olsconfig.yaml.j2' if ocp4_workload_ols_get_token
              else 'install_' + ocp4_workload_ai_platform + '_olsconfig.yaml.j2' }}
+
+# Build the list of non-admin users to grant lightspeed-operator-query-access.
+# Strategy depends on the auth provider:
+#   htpasswd → parse the htpasswd secret in openshift-config (authoritative source)
+#   keycloak → query the Keycloak REST API for users in the configured realm
+
+- name: Initialize user grant list
+  ansible.builtin.set_fact:
+    _ocp4_workload_ols_grant_users: []
+
+# htpasswd: the secret is the single source of truth for all configured usernames
+- name: Get htpasswd secret to discover configured users
+  when: ocp4_workload_ols_auth_provider == 'htpasswd'
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Secret
+    name: "{{ ocp4_workload_ols_htpasswd_secret_name }}"
+    namespace: openshift-config
+  register: r_htpasswd_secret
+
+- name: Build user list from htpasswd secret
+  when: ocp4_workload_ols_auth_provider == 'htpasswd'
+  ansible.builtin.set_fact:
+    _ocp4_workload_ols_grant_users: >-
+      {{
+        r_htpasswd_secret.resources[0].data.htpasswd
+        | b64decode
+        | split('\n')
+        | select('match', '.+:.+')
+        | map('regex_replace', ':.*$', '')
+        | reject('equalto', ocp4_workload_ols_admin_username)
+        | list
+      }}
+
+# keycloak: query the REST API to get the live list of users in the realm
+- name: Get Keycloak route
+  when: ocp4_workload_ols_auth_provider == 'keycloak'
+  kubernetes.core.k8s_info:
+    api_version: route.openshift.io/v1
+    kind: Route
+    name: keycloak
+    namespace: "{{ ocp4_workload_ols_keycloak_namespace }}"
+  register: r_keycloak_route
+
+- name: Get Keycloak admin credentials
+  when: ocp4_workload_ols_auth_provider == 'keycloak'
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Secret
+    name: keycloak-initial-admin
+    namespace: "{{ ocp4_workload_ols_keycloak_namespace }}"
+  register: r_keycloak_credentials
+
+- name: Get Keycloak admin token
+  when: ocp4_workload_ols_auth_provider == 'keycloak'
+  ansible.builtin.uri:
+    url: >-
+      https://{{ r_keycloak_route.resources[0].spec.host
+      }}/realms/master/protocol/openid-connect/token
+    method: POST
+    body_format: form-urlencoded
+    body:
+      client_id: admin-cli
+      username: "{{ r_keycloak_credentials.resources[0].data.username | b64decode }}"
+      password: "{{ r_keycloak_credentials.resources[0].data.password | b64decode }}"
+      grant_type: password
+    validate_certs: false
+  register: r_keycloak_token
+  no_log: true
+
+- name: Get users from Keycloak realm
+  when: ocp4_workload_ols_auth_provider == 'keycloak'
+  ansible.builtin.uri:
+    url: >-
+      https://{{ r_keycloak_route.resources[0].spec.host
+      }}/admin/realms/{{ ocp4_workload_ols_keycloak_realm }}/users?max=1000
+    method: GET
+    headers:
+      Authorization: "Bearer {{ r_keycloak_token.json.access_token }}"
+    validate_certs: false
+  register: r_keycloak_users
+  no_log: true
+
+- name: Build user list from Keycloak realm
+  when: ocp4_workload_ols_auth_provider == 'keycloak'
+  ansible.builtin.set_fact:
+    _ocp4_workload_ols_grant_users: >-
+      {{
+        r_keycloak_users.json
+        | map(attribute='username')
+        | reject('equalto', ocp4_workload_ols_admin_username)
+        | list
+      }}
+
+- name: Grant lightspeed-operator-query-access to non-admin users
+  when: _ocp4_workload_ols_grant_users | length > 0
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: "lightspeed-operator-query-access-{{ item }}"
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: lightspeed-operator-query-access
+      subjects:
+        - apiGroup: rbac.authorization.k8s.io
+          kind: User
+          name: "{{ item }}"
+  loop: "{{ _ocp4_workload_ols_grant_users }}"
