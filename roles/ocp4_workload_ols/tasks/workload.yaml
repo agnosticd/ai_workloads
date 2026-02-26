@@ -92,49 +92,51 @@
     _ocp4_workload_ols_grant_users: []
 
 # htpasswd: the secret is the single source of truth for all configured usernames
-- name: Get htpasswd secret to discover configured users
+- name: Discover users from htpasswd secret
   when: ocp4_workload_ols_auth_provider == 'htpasswd'
-  kubernetes.core.k8s_info:
-    api_version: v1
-    kind: Secret
-    name: "{{ ocp4_workload_ols_htpasswd_secret_name }}"
-    namespace: openshift-config
-  register: r_htpasswd_secret
+  block:
+    - name: Get htpasswd secret
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Secret
+        name: "{{ ocp4_workload_ols_htpasswd_secret_name }}"
+        namespace: openshift-config
+      register: r_htpasswd_secret
 
-- name: Build user list from htpasswd secret
-  when: ocp4_workload_ols_auth_provider == 'htpasswd'
-  ansible.builtin.set_fact:
-    _ocp4_workload_ols_grant_users: >-
-      {{
-        r_htpasswd_secret.resources[0].data.htpasswd
-        | b64decode
-        | split('\n')
-        | select('match', '.+:.+')
-        | map('regex_replace', ':.*$', '')
-        | reject('equalto', ocp4_workload_ols_admin_username)
-        | list
-      }}
+    - name: Build user list from htpasswd secret
+      ansible.builtin.set_fact:
+        _ocp4_workload_ols_grant_users: >-
+          {{
+            r_htpasswd_secret.resources[0].data.htpasswd
+            | b64decode
+            | split('\n')
+            | select('match', '.+:.+')
+            | map('regex_replace', ':.*$', '')
+            | reject('equalto', ocp4_workload_ols_admin_username)
+            | list
+          }}
 
 # keycloak: read the KeycloakRealmImport CR directly — no REST API or token needed
-- name: Get users from KeycloakRealmImport CR
+- name: Discover users from KeycloakRealmImport CR
   when: ocp4_workload_ols_auth_provider == 'keycloak'
-  kubernetes.core.k8s_info:
-    api_version: k8s.keycloak.org/v2alpha1
-    kind: KeycloakRealmImport
-    name: "{{ ocp4_workload_ols_keycloak_realm }}"
-    namespace: "{{ ocp4_workload_ols_keycloak_namespace }}"
-  register: r_keycloak_realm_import
+  block:
+    - name: Get KeycloakRealmImport CR
+      kubernetes.core.k8s_info:
+        api_version: k8s.keycloak.org/v2alpha1
+        kind: KeycloakRealmImport
+        name: "{{ ocp4_workload_ols_keycloak_realm }}"
+        namespace: "{{ ocp4_workload_ols_keycloak_namespace }}"
+      register: r_keycloak_realm_import
 
-- name: Build user list from KeycloakRealmImport
-  when: ocp4_workload_ols_auth_provider == 'keycloak'
-  ansible.builtin.set_fact:
-    _ocp4_workload_ols_grant_users: >-
-      {{
-        r_keycloak_realm_import.resources[0].spec.realm.users
-        | map(attribute='username')
-        | reject('equalto', ocp4_workload_ols_admin_username)
-        | list
-      }}
+    - name: Build user list from KeycloakRealmImport
+      ansible.builtin.set_fact:
+        _ocp4_workload_ols_grant_users: >-
+          {{
+            r_keycloak_realm_import.resources[0].spec.realm.users
+            | map(attribute='username')
+            | reject('equalto', ocp4_workload_ols_admin_username)
+            | list
+          }}
 
 - name: Grant lightspeed-operator-query-access to non-admin users
   when: _ocp4_workload_ols_grant_users | length > 0
