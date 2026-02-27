@@ -100,22 +100,23 @@ ocp4_workload_ols_loglevel: DEBUG
 # User Access Configuration
 # --------------------------------
 
-# Auth provider type: htpasswd or keycloak
-ocp4_workload_ols_auth_provider: htpasswd
+# Auth provider type: htpasswd or keycloak.
+# Defaults to the value set by ocp4_workload_authentication, or htpasswd if not present.
+ocp4_workload_ols_auth_provider: "{{ ocp4_workload_authentication_provider | default('htpasswd') }}"
 
 # Admin username to exclude when granting lightspeed-operator-query-access.
-ocp4_workload_ols_admin_username: admin
+ocp4_workload_ols_admin_username: "{{ ocp4_workload_authentication_admin_username | default('admin') }}"
 
 # --- htpasswd provider settings ---
 # Name of the htpasswd secret in openshift-config namespace.
-ocp4_workload_ols_htpasswd_secret_name: htpasswd
+ocp4_workload_ols_htpasswd_secret_name: "{{ ocp4_workload_authentication_htpasswd_secret_name | default('htpasswd') }}"
 
 # --- keycloak provider settings ---
 # Namespace where Keycloak is installed.
-ocp4_workload_ols_keycloak_namespace: keycloak
+ocp4_workload_ols_keycloak_namespace: "{{ ocp4_workload_authentication_keycloak_namespace | default('keycloak') }}"
 
 # Keycloak realm name (also the KeycloakRealmImport CR name).
-ocp4_workload_ols_keycloak_realm: sso
+ocp4_workload_ols_keycloak_realm: "{{ ocp4_workload_authentication_keycloak_default_realm | default('sso') }}"
 
 # --------------------------------
 # Debug and Demo Settings
