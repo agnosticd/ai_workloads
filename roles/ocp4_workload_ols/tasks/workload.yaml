@@ -81,3 +81,78 @@
         _olsconfig_template: >-
           {{ 'install_azure_app_sp_olsconfig.yaml.j2' if ocp4_workload_ols_get_token
              else 'install_' + ocp4_workload_ai_platform + '_olsconfig.yaml.j2' }}
+
+# Build the list of non-admin users to grant lightspeed-operator-query-access.
+# Strategy depends on the auth provider:
+#   htpasswd → parse the htpasswd secret in openshift-config (authoritative source)
+#   keycloak → read the KeycloakRealmImport CR (no REST API or token needed)
+
+- name: Initialize user grant list
+  ansible.builtin.set_fact:
+    _ocp4_workload_ols_grant_users: []
+
+# htpasswd: the secret is the single source of truth for all configured usernames
+- name: Discover users from htpasswd secret
+  when: ocp4_workload_ols_auth_provider == 'htpasswd'
+  block:
+    - name: Get htpasswd secret
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Secret
+        name: "{{ ocp4_workload_ols_htpasswd_secret_name }}"
+        namespace: openshift-config
+      register: r_htpasswd_secret
+
+    - name: Build user list from htpasswd secret
+      ansible.builtin.set_fact:
+        _ocp4_workload_ols_grant_users: >-
+          {{
+            r_htpasswd_secret.resources[0].data.htpasswd
+            | b64decode
+            | split('\n')
+            | select('match', '.+:.+')
+            | map('regex_replace', ':.*$', '')
+            | reject('equalto', ocp4_workload_ols_admin_username)
+            | list
+          }}
+
+# keycloak: read the KeycloakRealmImport CR directly — no REST API or token needed
+- name: Discover users from KeycloakRealmImport CR
+  when: ocp4_workload_ols_auth_provider == 'keycloak'
+  block:
+    - name: Get KeycloakRealmImport CR
+      kubernetes.core.k8s_info:
+        api_version: k8s.keycloak.org/v2alpha1
+        kind: KeycloakRealmImport
+        name: "{{ ocp4_workload_ols_keycloak_realm }}"
+        namespace: "{{ ocp4_workload_ols_keycloak_namespace }}"
+      register: r_keycloak_realm_import
+
+    - name: Build user list from KeycloakRealmImport
+      ansible.builtin.set_fact:
+        _ocp4_workload_ols_grant_users: >-
+          {{
+            r_keycloak_realm_import.resources[0].spec.realm.users
+            | map(attribute='username')
+            | reject('equalto', ocp4_workload_ols_admin_username)
+            | list
+          }}
+
+- name: Grant lightspeed-operator-query-access to non-admin users
+  when: _ocp4_workload_ols_grant_users | length > 0
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: "lightspeed-operator-query-access-{{ item }}"
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: lightspeed-operator-query-access
+      subjects:
+        - apiGroup: rbac.authorization.k8s.io
+          kind: User
+          name: "{{ item }}"
+  loop: "{{ _ocp4_workload_ols_grant_users }}"

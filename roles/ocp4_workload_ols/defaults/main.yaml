@@ -97,6 +97,27 @@ ocp4_workload_ols_defaultprovider: Azure
 ocp4_workload_ols_loglevel: DEBUG
 
 # --------------------------------
+# User Access Configuration
+# --------------------------------
+
+# Auth provider type: htpasswd or keycloak
+ocp4_workload_ols_auth_provider: htpasswd
+
+# Admin username to exclude when granting lightspeed-operator-query-access.
+ocp4_workload_ols_admin_username: admin
+
+# --- htpasswd provider settings ---
+# Name of the htpasswd secret in openshift-config namespace.
+ocp4_workload_ols_htpasswd_secret_name: htpasswd
+
+# --- keycloak provider settings ---
+# Namespace where Keycloak is installed.
+ocp4_workload_ols_keycloak_namespace: keycloak
+
+# Keycloak realm name (also the KeycloakRealmImport CR name).
+ocp4_workload_ols_keycloak_realm: sso
+
+# --------------------------------
 # Debug and Demo Settings
 # --------------------------------
 
