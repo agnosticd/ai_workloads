@@ -32,6 +32,16 @@
     install_operator_catalogsource_image: "{{ ocp4_workload_nvidia_gpu_operator_catalog_snapshot_image }}"
     install_operator_catalogsource_image_tag: "{{ ocp4_workload_nvidia_gpu_operator_catalog_snapshot_image_tag }}"
 
+- name: Wait for NVIDIA GPU Operator ClusterPolicy CRD to be available
+  kubernetes.core.k8s_info:
+    api_version: apiextensions.k8s.io/v1
+    kind: CustomResourceDefinition
+    name: clusterpolicies.nvidia.com
+  register: r_clusterpolicy_crd
+  retries: 30
+  delay: 10
+  until: r_clusterpolicy_crd.resources | length > 0
+
 - name: Setup NVIDIA GPU Cluster Policy
   kubernetes.core.k8s:
     state: present
