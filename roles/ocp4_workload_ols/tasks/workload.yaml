@@ -50,7 +50,7 @@
     # Setup Azure AI Cognitive Services (Token-based authentication)
     - name: Setup Azure AI Cognitive Services
       when: ocp4_workload_ols_get_token | bool
-      include_tasks: setup_azure_token.yaml
+      ansible.builtin.include_tasks: setup_azure_token.yaml
 
     # Create authentication secrets based on auth type
     - name: Create authentication secret

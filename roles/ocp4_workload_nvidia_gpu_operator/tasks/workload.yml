@@ -9,7 +9,9 @@
 
 - name: Fail if no NodeFeatureDiscovery objects found
   ansible.builtin.fail:
-    msg: "No NodeFeatureDiscovery objects found. Please install and configure the Node Feature Discovery operator before installing the NVIDIA GPU operator."
+    msg: >-
+      No NodeFeatureDiscovery objects found. Please install and configure
+      the Node Feature Discovery operator before installing the NVIDIA GPU operator.
   when: r_nfd_objects.resources | length == 0
 
 - name: Install NVIDIA GPU operator
