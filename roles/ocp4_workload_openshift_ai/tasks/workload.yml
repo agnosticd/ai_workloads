@@ -28,14 +28,16 @@
     _ocp4_workload_openshift_ai_installed_operator_csv: ""
 
 - name: Find CSV for the rhods operator
-  set_fact:
+  ansible.builtin.set_fact:
     _ocp4_workload_openshift_ai_installed_operator_csv: "{{ item.metadata.name }}"
   loop: "{{ r_csvs.resources }}"
   when: "'rhods-operator' in item.metadata.name"
 
 - name: Set Openshift AI Version 3 boolean
   ansible.builtin.set_fact:
-    _ocp4_workload_openshift_ai_version_3: "{{ _ocp4_workload_openshift_ai_installed_operator_csv.startswith('rhods-operator.3.') if _ocp4_workload_openshift_ai_installed_operator_csv else false }}"
+    _ocp4_workload_openshift_ai_version_3: >-
+      {{ _ocp4_workload_openshift_ai_installed_operator_csv.startswith('rhods-operator.3.')
+      if _ocp4_workload_openshift_ai_installed_operator_csv else false }}
 
 - name: Create OpenShift AI Data Science Cluster
   when: ocp4_workload_openshift_ai_deploy_dsc | bool
