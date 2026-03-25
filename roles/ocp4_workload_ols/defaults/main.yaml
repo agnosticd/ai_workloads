@@ -87,6 +87,9 @@ ocp4_workload_ols_llm_providers_url: 'https://llm-gpt4-lightspeed.cognitiveservi
 ocp4_workload_ols_llm_deploymentname: gpt-4
 # this is only used during verification of Azure SP token
 ocp4_workload_ols_azure_api_version: 2025-01-01-preview
+# Use max_completion_tokens instead of max_tokens (required for gpt-5)
+ocp4_workload_ols_use_max_completion_tokens: false
+ocp4_workload_ols_max_completion_tokens: 1000
 
 # Watson AI configuration (only used when ocp4_workload_ai_platform is watson)
 ocp4_workload_ols_watson_projectid: projectid

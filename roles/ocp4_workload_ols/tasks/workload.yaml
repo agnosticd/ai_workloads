@@ -109,9 +109,7 @@
           {{
             r_htpasswd_secret.resources[0].data.htpasswd
             | b64decode
-            | split('\n')
-            | select('match', '.+:.+')
-            | map('regex_replace', ':.*$', '')
+            | regex_findall('(?m)^([^:]+):')
             | reject('equalto', ocp4_workload_ols_admin_username)
             | list
           }}
