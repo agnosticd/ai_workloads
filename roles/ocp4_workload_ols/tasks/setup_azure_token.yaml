@@ -158,13 +158,19 @@
     headers:
       Content-Type: "application/json"
       Authorization: "Bearer {{ _child_access_token }}"
-    body:
-      messages:
-        - role: system
-          content: "You are a helpful assistant."
-        - role: user
-          content: "What is the largest city in India?"
-      max_tokens: 100
+    body: >-
+      {{
+        {
+          "messages": [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "What is the largest city in India?"}
+          ]
+        } | combine(
+          {"max_completion_tokens": ocp4_workload_ols_max_completion_tokens | int}
+          if ocp4_workload_ols_use_max_completion_tokens | bool
+          else {"max_tokens": 100}
+        )
+      }}
     body_format: json
     status_code: [200, 401]  # Accept 401 during retries while RBAC propagates
   register: ai_service_response
