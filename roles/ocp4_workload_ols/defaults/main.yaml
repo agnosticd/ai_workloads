@@ -80,11 +80,11 @@ ocp4_workload_ols_child_app_display_name: "RHDP-lightspeed"
 # --------------------------------
 
 # Azure OpenAI configuration
-ocp4_workload_ols_llm_providers_models_name: gpt-4
+ocp4_workload_ols_llm_providers_models_name: gpt-5
 ocp4_workload_ols_llm_providers_provide_name: Azure
 ocp4_workload_ols_llm_providers_provide_type: azure_openai
 ocp4_workload_ols_llm_providers_url: 'https://llm-gpt4-lightspeed.cognitiveservices.azure.com/'
-ocp4_workload_ols_llm_deploymentname: gpt-4
+ocp4_workload_ols_llm_deploymentname: gpt-5
 # this is only used during verification of Azure SP token
 ocp4_workload_ols_azure_api_version: 2025-01-01-preview
 
@@ -92,7 +92,7 @@ ocp4_workload_ols_azure_api_version: 2025-01-01-preview
 ocp4_workload_ols_watson_projectid: projectid
 
 # OLS runtime configuration
-ocp4_workload_ols_defaultmodel: gpt-4
+ocp4_workload_ols_defaultmodel: gpt-5
 ocp4_workload_ols_defaultprovider: Azure
 ocp4_workload_ols_loglevel: DEBUG
 
