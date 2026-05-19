@@ -61,3 +61,17 @@ ocp4_workload_openshift_ai_catalog_snapshot_image: quay.io/rhpds/olm_snapshot_re
 
 # Catalog snapshot image tag
 ocp4_workload_openshift_ai_catalog_snapshot_image_tag: v4.19_2025_07_21
+
+# --------------------------------
+# JobSet Operator Settings (for Trainer component)
+# --------------------------------
+# JobSet operator is required when trainer component is set to Managed
+
+# Channel to use for the JobSet operator
+ocp4_workload_openshift_ai_jobset_channel: stable-v1.0
+
+# Set automatic InstallPlan approval
+ocp4_workload_openshift_ai_jobset_automatic_install_plan_approval: true
+
+# Set a starting ClusterServiceVersion
+ocp4_workload_openshift_ai_jobset_starting_csv: ""
