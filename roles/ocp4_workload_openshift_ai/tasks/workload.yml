@@ -22,7 +22,8 @@
     name: install_operator
   vars:
     install_operator_action: install
-    install_operator_name: jobset-operator
+    install_operator_name: job-set
+    install_operator_csv_nameprefix: jobset-operator
     install_operator_namespace: openshift-jobset-operator
     install_operator_manage_namespaces:
     - openshift-jobset-operator
