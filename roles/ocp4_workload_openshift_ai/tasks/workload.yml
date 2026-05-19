@@ -65,12 +65,9 @@
     retries: 30
     delay: 10
 
-  - name: Get current dashboard replica count
-    ansible.builtin.set_fact:
-      _ocp4_workload_openshift_ai_current_dashboard_replicas: "{{ r_dashboard_deployment.resources[0].spec.replicas }}"
-
   - name: Scale dashboard deployment
-    when: _ocp4_workload_openshift_ai_current_dashboard_replicas | int != ocp4_workload_openshift_ai_dashboard_replicas | int
+    when:
+    - r_dashboard_deployment.resources[0].spec.replicas | int != ocp4_workload_openshift_ai_dashboard_replicas | int
     kubernetes.core.k8s:
       api_version: apps/v1
       kind: Deployment
@@ -81,7 +78,8 @@
           replicas: "{{ ocp4_workload_openshift_ai_dashboard_replicas }}"
 
   - name: Set dashboard component to Unmanaged after scaling
-    when: _ocp4_workload_openshift_ai_current_dashboard_replicas | int != ocp4_workload_openshift_ai_dashboard_replicas | int
+    when:
+    - r_dashboard_deployment.resources[0].spec.replicas | int != ocp4_workload_openshift_ai_dashboard_replicas | int
     kubernetes.core.k8s:
       api_version: datasciencecluster.opendatahub.io/{{ 'v2' if _ocp4_workload_openshift_ai_version_3 else 'v1' }}
       kind: DataScienceCluster
