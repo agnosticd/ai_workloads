@@ -66,8 +66,6 @@
     delay: 10
 
   - name: Scale dashboard deployment
-    when:
-    - r_dashboard_deployment.resources[0].spec.replicas | int != ocp4_workload_openshift_ai_dashboard_replicas | int
     kubernetes.core.k8s:
       api_version: apps/v1
       kind: Deployment
