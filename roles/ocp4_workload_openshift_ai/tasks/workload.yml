@@ -64,6 +64,29 @@
   retries: 30
   delay: 10
 
+- name: Scale dashboard deployment
+  when: ocp4_workload_openshift_ai_scale_dashboard | default(false) | bool
+  kubernetes.core.k8s:
+    api_version: apps/v1
+    kind: Deployment
+    name: rhods-dashboard
+    namespace: redhat-ods-applications
+    definition:
+      spec:
+        replicas: "{{ ocp4_workload_openshift_ai_dashboard_replicas }}"
+
+- name: Set dashboard component to Unmanaged after scaling
+  when: ocp4_workload_openshift_ai_scale_dashboard | default(false) | bool
+  kubernetes.core.k8s:
+    api_version: datasciencecluster.opendatahub.io/{{ 'v2' if _ocp4_workload_openshift_ai_version_3 else 'v1' }}
+    kind: DataScienceCluster
+    name: default-dsc
+    definition:
+      spec:
+        components:
+          dashboard:
+            managementState: Unmanaged
+
 - name: Create OpenShift AI Dashboard Route
   when: _ocp4_workload_openshift_ai_version_3 | bool
   kubernetes.core.k8s:
