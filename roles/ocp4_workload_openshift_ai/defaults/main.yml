@@ -63,10 +63,15 @@ ocp4_workload_openshift_ai_catalog_snapshot_image: quay.io/rhpds/olm_snapshot_re
 ocp4_workload_openshift_ai_catalog_snapshot_image_tag: v4.19_2025_07_21
 
 # --------------------------------
-# Dashboard Replica Scaling
+# JobSet Operator Settings (for Trainer component)
 # --------------------------------
-# Set ocp4_workload_openshift_ai_scale_dashboard to true to override operator default
-# Useful for SNO clusters where 1 replica is preferred
-# When enabled, dashboard component will be set to Unmanaged to prevent operator reconciliation
-ocp4_workload_openshift_ai_scale_dashboard: false
-ocp4_workload_openshift_ai_dashboard_replicas: 2
+# JobSet operator is required when trainer component is set to Managed
+
+# Channel to use for the JobSet operator
+ocp4_workload_openshift_ai_jobset_channel: stable-v1.0
+
+# Set automatic InstallPlan approval
+ocp4_workload_openshift_ai_jobset_automatic_install_plan_approval: true
+
+# Set a starting ClusterServiceVersion
+ocp4_workload_openshift_ai_jobset_starting_csv: ""
