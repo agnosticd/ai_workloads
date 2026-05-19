@@ -38,7 +38,7 @@
   when: ocp4_workload_openshift_ai_trainer == 'Managed'
   kubernetes.core.k8s:
     state: present
-    src: "{{ role_path }}/files/jobset-operator.yaml"
+    src: files/jobset-operator.yaml
 
 - name: Get installed CSVs
   kubernetes.core.k8s_info:
