@@ -49,18 +49,17 @@
   retries: 10
   delay: 30
 
-- name: Check if Data Science Cluster is ready
+- name: Wait for dashboard deployment to be created
+  when: ocp4_workload_openshift_ai_scale_dashboard | default(false) | bool
   kubernetes.core.k8s_info:
-    api_version: datasciencecluster.opendatahub.io/{{ 'v2' if _ocp4_workload_openshift_ai_version_3 else 'v1' }}
-    kind: DataScienceCluster
-    name: default-dsc
-  register: r_ds_cluster
+    api_version: apps/v1
+    kind: Deployment
+    name: rhods-dashboard
+    namespace: redhat-ods-applications
+  register: r_dashboard_deployment
   until:
-  - r_ds_cluster.resources is defined
-  - r_ds_cluster.resources | length > 0
-  - r_ds_cluster.resources[0].status is defined
-  - r_ds_cluster.resources[0].status.phase is defined
-  - r_ds_cluster.resources[0].status.phase == 'Ready'
+  - r_dashboard_deployment.resources is defined
+  - r_dashboard_deployment.resources | length > 0
   retries: 30
   delay: 10
 
@@ -86,6 +85,21 @@
         components:
           dashboard:
             managementState: Unmanaged
+
+- name: Check if Data Science Cluster is ready
+  kubernetes.core.k8s_info:
+    api_version: datasciencecluster.opendatahub.io/{{ 'v2' if _ocp4_workload_openshift_ai_version_3 else 'v1' }}
+    kind: DataScienceCluster
+    name: default-dsc
+  register: r_ds_cluster
+  until:
+  - r_ds_cluster.resources is defined
+  - r_ds_cluster.resources | length > 0
+  - r_ds_cluster.resources[0].status is defined
+  - r_ds_cluster.resources[0].status.phase is defined
+  - r_ds_cluster.resources[0].status.phase == 'Ready'
+  retries: 30
+  delay: 10
 
 - name: Create OpenShift AI Dashboard Route
   when: _ocp4_workload_openshift_ai_version_3 | bool
