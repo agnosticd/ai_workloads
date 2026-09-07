@@ -214,13 +214,6 @@
         - Model: {{ ocp5_workload_ols_agentic_model }}
         - Alerts Adapter: {{ ocp5_workload_ols_agentic_enable_alerts_adapter }}
         - Console Plugin: {{ ocp5_workload_ols_agentic_enable_console }}
-
-      To submit a test run:
-        oc apply -f https://raw.githubusercontent.com/openshift/lightspeed-agentic-operator/main/hack/quickstart/examples/namespace-inventory.yaml
-
-      To watch run progress:
-        oc get agenticruns -n {{ ocp5_workload_ols_namespace }} -w
-
       Execution stage requires manual approval via AgenticRunApproval CR.
     data:
       agentic_ols_namespace: "{{ ocp5_workload_ols_namespace }}"

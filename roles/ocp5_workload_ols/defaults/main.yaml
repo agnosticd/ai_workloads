@@ -146,7 +146,7 @@ ocp5_workload_ols_keycloak_realm: >-
 ocp5_workload_ols_debug: false
 
 # --------------------------------
-# Agentic OLS (optional, disabled by default)
+# Agentic OLS (optional)
 # --------------------------------
 
 # Set to true to deploy the agentic OLS component on top of classic OLS
@@ -155,11 +155,10 @@ ocp5_workload_ols_enable_agentic: false
 # User-provided OpenAI API key for the agentic component.
 # INDEPENDENT from the Azure credentials used by classic OLS.
 # IMPORTANT: Must be set to a real key when ocp5_workload_ols_enable_agentic is true.
-# DO NOT commit real credentials to version control.
 ocp5_workload_ols_agentic_api_key: "changeme"
 
 # LLM model used by the agentic component
-ocp5_workload_ols_agentic_model: gpt-4o
+ocp5_workload_ols_agentic_model: gpt-5.4
 
 # Agentic operator source repository
 ocp5_workload_ols_agentic_repo_url: https://github.com/openshift/lightspeed-agentic-operator
