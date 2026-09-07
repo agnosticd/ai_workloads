@@ -1,0 +1,227 @@
+---
+# ================================
+# Agentic OLS Deployment
+# Runs quickstart scripts from the agentic operator repo in component order
+# so that individual sub-components can be toggled via feature flags.
+# Classic OLS continues using its Azure credentials; the agentic component
+# uses an independent user-provided OpenAI API key (ocp5_workload_ols_agentic_api_key).
+# ================================
+
+- name: Assert agentic API key is configured
+  ansible.builtin.assert:
+    that:
+      - ocp5_workload_ols_agentic_api_key is defined
+      - ocp5_workload_ols_agentic_api_key != "changeme"
+      - ocp5_workload_ols_agentic_api_key | length > 0
+    fail_msg: >-
+      ocp5_workload_ols_agentic_api_key must be set to a real OpenAI API key
+      when ocp5_workload_ols_enable_agentic is true.
+
+- name: Create temp directory for agentic operator repo clone
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: _agentic_ols
+  register: r_agentic_tmp
+
+- name: Clone agentic operator repo (shallow)
+  ansible.builtin.git:
+    repo: "{{ ocp5_workload_ols_agentic_repo_url }}"
+    version: "{{ ocp5_workload_ols_agentic_repo_version }}"
+    dest: "{{ r_agentic_tmp.path }}/repo"
+    depth: 1
+    single_branch: true
+
+# --------------------------------
+# Build optional flag strings
+# Empty string means no flag — quickstart scripts use their default image
+# --------------------------------
+
+- name: Build deploy flags
+  ansible.builtin.set_fact:
+    _ocp5_workload_ols_otel_flags: "{{ [('--image=' + ocp5_workload_ols_agentic_otel_image) if ocp5_workload_ols_agentic_otel_image else '', '--postgres' if ocp5_workload_ols_agentic_enable_postgres | bool else ''] | select | join(' ') }}"
+    _ocp5_workload_ols_configmap_flags: "{{ ('--sandbox-image=' + ocp5_workload_ols_agentic_sandbox_image) if ocp5_workload_ols_agentic_sandbox_image else '' }}"
+    _ocp5_workload_ols_operator_flags: "{{ ('--image=' + ocp5_workload_ols_agentic_operator_image) if ocp5_workload_ols_agentic_operator_image else '' }}"
+    _ocp5_workload_ols_alerts_adapter_flags: "{{ ('--image=' + ocp5_workload_ols_agentic_alerts_adapter_image) if ocp5_workload_ols_agentic_alerts_adapter_image else '' }}"
+    _ocp5_workload_ols_console_flags: "{{ ('--image=' + ocp5_workload_ols_agentic_console_image) if ocp5_workload_ols_agentic_console_image else '' }}"
+
+# --------------------------------
+# Pre-flight: release ConfigMap ownership from classic OLS operator
+# The classic OLS operator manages lightspeed-agentic-configuration via an
+# ownerReference, which blocks the agentic quickstart scripts from patching it.
+# --------------------------------
+
+- name: Scale down classic OLS operator to release ConfigMap ownership
+  kubernetes.core.k8s:
+    api_version: apps/v1
+    kind: Deployment
+    name: lightspeed-operator-controller-manager
+    namespace: "{{ ocp5_workload_ols_namespace }}"
+    definition:
+      spec:
+        replicas: 0
+    merge_type: merge
+
+- name: Check if lightspeed-agentic-configuration ConfigMap already exists
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: ConfigMap
+    name: lightspeed-agentic-configuration
+    namespace: "{{ ocp5_workload_ols_namespace }}"
+  register: r_agentic_configmap
+
+- name: Remove ownerReferences from lightspeed-agentic-configuration ConfigMap
+  when:
+    - r_agentic_configmap.resources | length > 0
+    - r_agentic_configmap.resources[0].metadata.ownerReferences is defined
+  kubernetes.core.k8s_json_patch:
+    api_version: v1
+    kind: ConfigMap
+    name: lightspeed-agentic-configuration
+    namespace: "{{ ocp5_workload_ols_namespace }}"
+    patch:
+      - op: remove
+        path: /metadata/ownerReferences
+
+# --------------------------------
+# Deploy components
+# --------------------------------
+
+- name: Log in to OpenShift cluster for quickstart scripts
+  ansible.builtin.shell:
+    cmd: >
+      oc login {{ openshift_api_url }}
+      --token={{ openshift_api_key }}
+      --insecure-skip-tls-verify=true
+    executable: /bin/bash
+  changed_when: true
+  no_log: true
+
+- name: Deploy OTEL collector
+  ansible.builtin.shell:
+    cmd: "bash deploy-otel.sh {{ _ocp5_workload_ols_otel_flags | default('') | trim }}"
+    chdir: "{{ r_agentic_tmp.path }}/repo/hack/quickstart"
+    executable: /bin/bash
+  environment:
+    NAMESPACE: "{{ ocp5_workload_ols_namespace }}"
+  changed_when: true
+
+- name: Deploy agentic configuration ConfigMap
+  ansible.builtin.shell:
+    cmd: "bash deploy-configmap.sh {{ _ocp5_workload_ols_configmap_flags | default('') | trim }}"
+    chdir: "{{ r_agentic_tmp.path }}/repo/hack/quickstart"
+    executable: /bin/bash
+  environment:
+    NAMESPACE: "{{ ocp5_workload_ols_namespace }}"
+  changed_when: true
+
+- name: Deploy agentic operator
+  ansible.builtin.shell:
+    cmd: "bash deploy-operator.sh {{ _ocp5_workload_ols_operator_flags | default('') | trim }}"
+    chdir: "{{ r_agentic_tmp.path }}/repo/hack/quickstart"
+    executable: /bin/bash
+  environment:
+    NAMESPACE: "{{ ocp5_workload_ols_namespace }}"
+  changed_when: true
+
+- name: Deploy alerts adapter
+  when: ocp5_workload_ols_agentic_enable_alerts_adapter | bool
+  ansible.builtin.shell:
+    cmd: "bash deploy-alerts-adapter.sh {{ _ocp5_workload_ols_alerts_adapter_flags | default('') | trim }}"
+    chdir: "{{ r_agentic_tmp.path }}/repo/hack/quickstart"
+    executable: /bin/bash
+  environment:
+    NAMESPACE: "{{ ocp5_workload_ols_namespace }}"
+  changed_when: true
+
+- name: Deploy console plugin
+  when: ocp5_workload_ols_agentic_enable_console | bool
+  ansible.builtin.shell:
+    cmd: "bash deploy-console.sh {{ _ocp5_workload_ols_console_flags | default('') | trim }}"
+    chdir: "{{ r_agentic_tmp.path }}/repo/hack/quickstart"
+    executable: /bin/bash
+  environment:
+    NAMESPACE: "{{ ocp5_workload_ols_namespace }}"
+  changed_when: true
+
+# --------------------------------
+# LLM credentials — user-provided OpenAI API key
+# Creates llm-creds-openai directly from ocp5_workload_ols_agentic_api_key.
+# This is completely independent from the classic OLS 'credentials' Secret.
+# --------------------------------
+
+- name: Create llm-creds-openai secret from user-provided API key
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: llm-creds-openai
+        namespace: "{{ ocp5_workload_ols_namespace }}"
+      type: Opaque
+      stringData:
+        OPENAI_API_KEY: "{{ ocp5_workload_ols_agentic_api_key }}"
+  no_log: true
+
+- name: Apply LLMProvider CR
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: agentic.openshift.io/v1alpha1
+      kind: LLMProvider
+      metadata:
+        name: openai
+        namespace: "{{ ocp5_workload_ols_namespace }}"
+      spec:
+        type: OpenAI
+        openAI:
+          credentialsSecret:
+            name: llm-creds-openai
+
+- name: Apply Agent CR
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: agentic.openshift.io/v1alpha1
+      kind: Agent
+      metadata:
+        name: default
+        namespace: "{{ ocp5_workload_ols_namespace }}"
+      spec:
+        llmProvider:
+          name: openai
+        model: "{{ ocp5_workload_ols_agentic_model }}"
+        timeouts:
+          analysisSeconds: 120
+          executionSeconds: 120
+          verificationSeconds: 120
+
+# --------------------------------
+# Cleanup and user info
+# --------------------------------
+
+- name: Remove temp repo clone
+  ansible.builtin.file:
+    path: "{{ r_agentic_tmp.path }}"
+    state: absent
+
+- name: Set user info for Agentic OLS
+  agnosticd.core.agnosticd_user_info:
+    msg: |
+      Agentic OpenShift Lightspeed deployed successfully:
+        - Namespace: {{ ocp5_workload_ols_namespace }}
+        - LLM endpoint: https://api.openai.com (direct OpenAI)
+        - Model: {{ ocp5_workload_ols_agentic_model }}
+        - Alerts Adapter: {{ ocp5_workload_ols_agentic_enable_alerts_adapter }}
+        - Console Plugin: {{ ocp5_workload_ols_agentic_enable_console }}
+
+      To submit a test run:
+        oc apply -f https://raw.githubusercontent.com/openshift/lightspeed-agentic-operator/main/hack/quickstart/examples/namespace-inventory.yaml
+
+      To watch run progress:
+        oc get agenticruns -n {{ ocp5_workload_ols_namespace }} -w
+
+      Execution stage requires manual approval via AgenticRunApproval CR.
+    data:
+      agentic_ols_namespace: "{{ ocp5_workload_ols_namespace }}"
+      agentic_model: "{{ ocp5_workload_ols_agentic_model }}"

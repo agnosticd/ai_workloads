@@ -1,0 +1,161 @@
+# Validate required variables are set
+- name: Validate Azure token authentication variables
+  when: ocp5_workload_ols_get_token | bool
+  ansible.builtin.assert:
+    that:
+      - ocp5_workload_ols_azure_tenant_id is defined
+      - ocp5_workload_ols_azure_tenant_id != "changeme"
+      - ocp5_workload_ols_main_client_id is defined
+      - ocp5_workload_ols_main_client_id != "changeme"
+      - ocp5_workload_ols_main_client_secret is defined
+      - ocp5_workload_ols_main_client_secret != "changeme"
+      - ocp5_workload_ols_azure_group_id is defined
+      - ocp5_workload_ols_azure_group_id != "changeme"
+      - ocp5_workload_ols_child_app_display_name is defined
+      - guid is defined
+    fail_msg: "Azure token authentication is enabled but required variables are not properly configured. Please check defaults/main.yaml"
+
+- name: Validate API key authentication variables
+  when: not ocp5_workload_ols_get_token | bool
+  ansible.builtin.assert:
+    that:
+      - ocp5_workload_ols_api_token is defined
+      - ocp5_workload_ols_api_token != "changeme"
+      - ocp5_workload_ols_api_token | length > 0
+    fail_msg: "API key authentication is enabled but ocp5_workload_ols_api_token is not properly configured. Please check defaults/main.yaml"
+
+- name: Validate AI platform is supported
+  when: ocp5_workload_ols_ai_platform is defined
+  ansible.builtin.assert:
+    that:
+      - ocp5_workload_ols_ai_platform in ['azure', 'openai', 'watson', 'openshiftai']
+    fail_msg: "ocp5_workload_ols_ai_platform must be one of: azure, openai, watson, openshiftai"
+
+# Ensure that the openshift-lightspeed namespace is always created
+- name: Ensure openshift-lightspeed namespace exists
+  kubernetes.core.k8s:
+    api_version: v1
+    kind: Namespace
+    name: openshift-lightspeed
+    state: present
+
+# Install the OLS Operator
+- name: Install OLS Operator
+  when: ocp5_workload_ols_install_operator | bool
+  ansible.builtin.include_tasks: install_ols_operator.yaml
+
+# Configure OLS
+- name: Configure OLS
+  block:
+    # Setup Azure AI Cognitive Services (Token-based authentication)
+    - name: Setup Azure AI Cognitive Services
+      when: ocp5_workload_ols_get_token | bool
+      ansible.builtin.include_tasks: setup_azure_token.yaml
+
+    # Create authentication secrets based on auth type
+    - name: Create authentication secret
+      kubernetes.core.k8s:
+        template: "{{ _secret_template }}"
+        wait: true
+        wait_timeout: 300
+      vars:
+        _secret_template: >-
+          {{ 'create_secret_token.yaml.j2' if ocp5_workload_ols_get_token
+             else 'create_secret.yaml.j2' }}
+
+    - name: Create Azure App Service Principal Secret
+      when: ocp5_workload_ols_get_token | bool
+      kubernetes.core.k8s:
+        template: create_azure_api_token.yaml.j2
+        wait: true
+        wait_timeout: 300
+
+    # Create OLSConfig based on auth type
+    - name: Create OLSConfig
+      when: ocp5_workload_ols_ai_platform is defined
+      kubernetes.core.k8s:
+        template: "{{ _olsconfig_template }}"
+        wait: true
+        wait_timeout: 300
+      vars:
+        _olsconfig_template: >-
+          {{ 'install_azure_app_sp_olsconfig.yaml.j2' if ocp5_workload_ols_get_token
+             else 'install_' + ocp5_workload_ols_ai_platform + '_olsconfig.yaml.j2' }}
+
+# Build the list of non-admin users to grant lightspeed-operator-query-access.
+# Strategy depends on the auth provider:
+#   htpasswd → parse the htpasswd secret in openshift-config (authoritative source)
+#   keycloak → read the KeycloakRealmImport CR (no REST API or token needed)
+
+- name: Initialize user grant list
+  ansible.builtin.set_fact:
+    _ocp5_workload_ols_grant_users: []
+
+# htpasswd: the secret is the single source of truth for all configured usernames
+- name: Discover users from htpasswd secret
+  when: ocp5_workload_ols_auth_provider == 'htpasswd'
+  block:
+    - name: Get htpasswd secret
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Secret
+        name: "{{ ocp5_workload_ols_htpasswd_secret_name }}"
+        namespace: openshift-config
+      register: r_htpasswd_secret
+
+    - name: Build user list from htpasswd secret
+      ansible.builtin.set_fact:
+        _ocp5_workload_ols_grant_users: >-
+          {{
+            r_htpasswd_secret.resources[0].data.htpasswd
+            | b64decode
+            | regex_findall('(?m)^([^:]+):')
+            | reject('equalto', ocp5_workload_ols_admin_username)
+            | list
+          }}
+
+# keycloak: read the KeycloakRealmImport CR directly — no REST API or token needed
+- name: Discover users from KeycloakRealmImport CR
+  when: ocp5_workload_ols_auth_provider == 'keycloak'
+  block:
+    - name: Get KeycloakRealmImport CR
+      kubernetes.core.k8s_info:
+        api_version: k8s.keycloak.org/v2alpha1
+        kind: KeycloakRealmImport
+        name: "{{ ocp5_workload_ols_keycloak_realm }}"
+        namespace: "{{ ocp5_workload_ols_keycloak_namespace }}"
+      register: r_keycloak_realm_import
+
+    - name: Build user list from KeycloakRealmImport
+      ansible.builtin.set_fact:
+        _ocp5_workload_ols_grant_users: >-
+          {{
+            r_keycloak_realm_import.resources[0].spec.realm.users
+            | map(attribute='username')
+            | reject('equalto', ocp5_workload_ols_admin_username)
+            | list
+          }}
+
+- name: Grant lightspeed-operator-query-access to non-admin users
+  when: _ocp5_workload_ols_grant_users | length > 0
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: "lightspeed-operator-query-access-{{ item }}"
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: lightspeed-operator-query-access
+      subjects:
+        - apiGroup: rbac.authorization.k8s.io
+          kind: User
+          name: "{{ item }}"
+  loop: "{{ _ocp5_workload_ols_grant_users }}"
+
+# Deploy agentic OLS on top of classic OLS (optional, gated by feature flag)
+- name: Deploy Agentic OLS
+  when: ocp5_workload_ols_enable_agentic | bool
+  ansible.builtin.include_tasks: deploy_agentic_ols.yaml
