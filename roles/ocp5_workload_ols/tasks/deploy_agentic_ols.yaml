@@ -38,11 +38,13 @@
 
 - name: Build deploy flags
   ansible.builtin.set_fact:
+    # yamllint disable rule:line-length
     _ocp5_workload_ols_otel_flags: "{{ [('--image=' + ocp5_workload_ols_agentic_otel_image) if ocp5_workload_ols_agentic_otel_image else '', '--postgres' if ocp5_workload_ols_agentic_enable_postgres | bool else ''] | select | join(' ') }}"
     _ocp5_workload_ols_configmap_flags: "{{ ('--sandbox-image=' + ocp5_workload_ols_agentic_sandbox_image) if ocp5_workload_ols_agentic_sandbox_image else '' }}"
     _ocp5_workload_ols_operator_flags: "{{ ('--image=' + ocp5_workload_ols_agentic_operator_image) if ocp5_workload_ols_agentic_operator_image else '' }}"
     _ocp5_workload_ols_alerts_adapter_flags: "{{ ('--image=' + ocp5_workload_ols_agentic_alerts_adapter_image) if ocp5_workload_ols_agentic_alerts_adapter_image else '' }}"
     _ocp5_workload_ols_console_flags: "{{ ('--image=' + ocp5_workload_ols_agentic_console_image) if ocp5_workload_ols_agentic_console_image else '' }}"
+    # yamllint enable rule:line-length
 
 # --------------------------------
 # Pre-flight: release ConfigMap ownership from classic OLS operator
