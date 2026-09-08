@@ -47,16 +47,13 @@ It consists of the following task files:
 *** Creates llm-creds-openai Secret from ocp5_workload_ols_agentic_api_key (user-provided OpenAI key, fully independent of classic OLS Azure credentials).
 *** Applies LLMProvider and Agent CRs (agentic.openshift.io/v1alpha1) using direct OpenAI API.
 
-** Tasks: remove_agentic_ols.yaml - Removes the agentic OLS component in reverse order.
-*** Calls individual undeploy scripts (not uninstall.sh) to avoid deleting the shared openshift-lightspeed namespace.
-*** Restores classic OLS operator to replicas=1 after undeploy.
-
 == Agentic OLS Configuration
 
 * Set ocp5_workload_ols_enable_agentic: true to deploy the agentic component on top of classic OLS.
 * Provide ocp5_workload_ols_agentic_api_key with a real OpenAI API key.
   This is completely independent of the Azure credentials used by classic OLS.
-* The classic OLS operator is temporarily scaled to 0 during agentic deployment and restored to 1 during removal.
+* The classic OLS operator is scaled to 0 after classic OLS is fully ready, and remains at 0 for the lifetime of the environment.
+* Agentic OLS is not uninstalled on destroy — the cluster itself is deleted.
 
 == The defaults variable file
 

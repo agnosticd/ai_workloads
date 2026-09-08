@@ -3,12 +3,6 @@
 # cleaned up here as the entire cluster will be destroyed. This removal only handles
 # external resources that persist after cluster deletion.
 
-# Remove agentic OLS first — requires the cluster to be running for undeploy scripts
-# and must restore the classic OLS operator to replicas=1 before cluster teardown.
-- name: Remove Agentic OLS
-  when: ocp5_workload_ols_enable_agentic | bool
-  ansible.builtin.include_tasks: remove_agentic_ols.yaml
-
 # Remove Azure App Registration and Service Principal (if token auth was used)
 - name: Remove Azure App and Service Principal
   when: ocp5_workload_ols_get_token | bool
