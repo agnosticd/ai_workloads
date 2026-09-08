@@ -47,6 +47,27 @@
     # yamllint enable rule:line-length
 
 # --------------------------------
+# Pre-flight: wait for classic OLS to be fully reconciled before freezing
+# the operator. This ensures all operator-managed resources (postgres secrets,
+# app-server) exist before we scale to 0. The app-server becoming available
+# implies postgres and all its secrets are already created.
+# --------------------------------
+
+- name: Wait for classic OLS app-server to be fully available
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: Deployment
+    name: lightspeed-app-server
+    namespace: "{{ ocp5_workload_ols_namespace }}"
+  register: r_app_server
+  until:
+    - r_app_server.resources | length > 0
+    - r_app_server.resources[0].status.availableReplicas is defined
+    - r_app_server.resources[0].status.availableReplicas >= 1
+  retries: 30
+  delay: 20
+
+# --------------------------------
 # Pre-flight: release ConfigMap ownership from classic OLS operator
 # The classic OLS operator manages lightspeed-agentic-configuration via an
 # ownerReference, which blocks the agentic quickstart scripts from patching it.
